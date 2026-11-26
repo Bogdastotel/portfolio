@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+}
+
+/* Dark is the default; the toggle sets data-theme="light". */
+:root {
+  color-scheme: dark;
+  --bg: #0a0d12;
+  --surface: #10141b;
+  --raised: #171c25;
+  --line: #232a36;
+  --fg: #e8ebf0;
+  --muted: #909aab;
+  --accent: #4ade9f;
+  --accent-fg: #06130d;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --raised: #eef1f5;
+  --line: #dce1e8;
+  --fg: #10141b;
+  --muted: #586172;
+  --accent: #0b7a52;
+  --accent-fg: #ffffff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-bg text-fg font-sans antialiased;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* The toggle shows the icon for the theme you would switch to. */
+:root[data-theme="light"] .theme-icon-light,
+:root:not([data-theme="light"]) .theme-icon-dark {
+  display: none;
+}
+
+/*
+ * Scroll reveal, CSS only. Browsers without scroll-driven animations, users
+ * who prefer reduced motion, and no-JS visitors simply see the content.
+ */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
