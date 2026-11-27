@@ -5,7 +5,7 @@ import { StatusBadge } from "~/components/ui/StatusBadge";
 import { profile } from "~/content/profile";
 import { getProject, projects } from "~/content/projects";
 import { seo } from "~/lib/seo";
-import type { Score, World, WorldInput } from "~/play/world";
+import type { Progress, Score, World, WorldInput } from "~/play/world";
 
 export function meta() {
   return seo({
@@ -48,6 +48,29 @@ function PadButton({ label, action, onPress, small = false, children }: PadProps
   );
 }
 
+/**
+ * Where the visitor got to, kept for as long as the browser tab stays open, so coming back from a case study (or
+ * reloading) carries on instead of starting over.
+ */
+const PROGRESS_KEY = "play-progress";
+
+function loadProgress(): Progress | null {
+  try {
+    const stored = sessionStorage.getItem(PROGRESS_KEY);
+    return stored ? (JSON.parse(stored) as Progress) : null;
+  } catch {
+    return null;
+  }
+}
+
+function storeProgress(progress: Progress) {
+  try {
+    sessionStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  } catch {
+    // Private windows can refuse storage; the visit just starts over next time.
+  }
+}
+
 export default function Play() {
   const container = useRef<HTMLDivElement>(null);
   const minimap = useRef<HTMLCanvasElement>(null);
@@ -87,6 +110,7 @@ export default function Play() {
           minimap: minimap.current,
           onNear: setNearSlug,
           onScore: setScore,
+          progress: loadProgress(),
         });
         setStatus("ready");
       })
@@ -94,8 +118,16 @@ export default function Play() {
         if (!cancelled) setStatus("failed");
       });
 
+    // Reloading or closing the tab does not run the clean-up below, so the position is also saved as the page goes.
+    const onPageHide = () => {
+      if (world.current) storeProgress(world.current.save());
+    };
+    window.addEventListener("pagehide", onPageHide);
+
     return () => {
       cancelled = true;
+      window.removeEventListener("pagehide", onPageHide);
+      if (world.current) storeProgress(world.current.save());
       world.current?.dispose();
       world.current = null;
     };
@@ -110,7 +142,7 @@ export default function Play() {
       // A control reached with Tab keeps Enter for itself.
       if (event.target instanceof HTMLElement && event.target.closest("a, button, summary")) return;
       event.preventDefault();
-      navigate(`/work/${nearSlug}`);
+      navigate(`/work/${nearSlug}`, { state: { from: "play" } });
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -252,10 +284,10 @@ export default function Play() {
               </button>
             )}
             <Link
-              to="/#work"
+              to="/"
               className="rounded-full border border-line bg-surface/85 px-4 py-2 text-sm font-medium backdrop-blur transition-colors hover:border-muted"
             >
-              Plain list →
+              Exit playground
             </Link>
           </div>
           <canvas
@@ -298,6 +330,7 @@ export default function Play() {
             <p className="mt-1 text-sm text-muted">{near.summary}</p>
             <Link
               to={`/work/${near.slug}`}
+              state={{ from: "play" }}
               className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition-opacity hover:opacity-90"
             >
               Open case study

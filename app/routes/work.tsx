@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 
 import { NotFound } from "~/components/NotFound";
 import { ButtonLink } from "~/components/ui/Button";
@@ -19,6 +19,8 @@ export function meta({ params }: Route.MetaArgs) {
 
 export default function Work({ params }: Route.ComponentProps) {
   const project = getProject(params.slug);
+  // Visitors who drove here from the 3D playground get a way back to where they parked.
+  const fromPlay = (useLocation().state as { from?: string } | null)?.from === "play";
   if (!project) return <NotFound />;
 
   const next = projects[(projects.indexOf(project) + 1) % projects.length];
@@ -31,9 +33,15 @@ export default function Work({ params }: Route.ComponentProps) {
 
   return (
     <article className="mx-auto max-w-6xl px-5 pb-24 pt-12 sm:px-8 sm:pt-16">
-      <Link to="/#work" viewTransition className="font-mono text-xs text-muted transition-colors hover:text-fg">
-        ← All work
-      </Link>
+      {fromPlay ? (
+        <Link to="/play" className="font-mono text-xs text-muted transition-colors hover:text-fg">
+          ← Back to playground
+        </Link>
+      ) : (
+        <Link to="/#work" viewTransition className="font-mono text-xs text-muted transition-colors hover:text-fg">
+          ← All work
+        </Link>
+      )}
 
       <header className="mt-8 grid gap-10 lg:grid-cols-[1fr_20rem] lg:gap-12">
         <div className="lg:self-center">
@@ -45,8 +53,9 @@ export default function Work({ params }: Route.ComponentProps) {
             {project.name}
           </h1>
           <p className="mt-5 max-w-2xl text-xl text-muted">{project.summary}</p>
-          {project.links.length > 0 && (
+          {(fromPlay || project.links.length > 0) && (
             <div className="mt-8 flex flex-wrap gap-3">
+              {fromPlay && <ButtonLink to="/play">← Back to playground</ButtonLink>}
               {project.links.map((link) => (
                 <ButtonLink key={link.href} href={link.href} variant="secondary">
                   {link.label} ↗
@@ -178,6 +187,7 @@ export default function Work({ params }: Route.ComponentProps) {
         <p className="font-mono text-xs text-muted">Next project</p>
         <Link
           to={`/work/${next.slug}`}
+          state={fromPlay ? { from: "play" } : undefined}
           viewTransition
           className="mt-3 inline-block font-display text-3xl font-semibold tracking-tight transition-colors hover:text-accent sm:text-4xl"
         >

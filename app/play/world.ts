@@ -3,13 +3,19 @@ import * as THREE from "three";
 import type { Project } from "~/content/projects";
 
 import { createSound } from "./sound";
+import { buildStationProps, type StationProps } from "./stationProps";
 
 export type WorldInput = { up: boolean; down: boolean; left: boolean; right: boolean; brake: boolean };
 
 export type Score = { coins: number; coinsTotal: number; pins: number; strikes: number; goals: number };
 
+/** Where a visit got to, so leaving for a case study and coming back picks up from the same spot. */
+export type Progress = { x: number; z: number; heading: number; coins: boolean[]; strikes: number; goals: number };
+
 export type World = {
   input: WorldInput;
+  /** A snapshot of the car's position and the score, to hand back to `createWorld` later. */
+  save: () => Progress;
   reset: () => void;
   horn: () => void;
   /** A short burst of speed, with a few seconds to recharge. */
@@ -27,6 +33,8 @@ type Options = {
   /** Called when the nearest project in range changes. */
   onNear: (slug: string | null) => void;
   onScore: (score: Score) => void;
+  /** Progress from an earlier visit to carry on from. */
+  progress?: Progress | null;
 };
 
 type Station = {
@@ -38,6 +46,8 @@ type Station = {
   screen: THREE.Object3D;
   restY: number;
   glow: number;
+  /** Idle animation of the props around the station, if they have one. */
+  update?: StationProps["update"];
   /** "Enter to open" painted beside the station; missing on touch screens. */
   prompt?: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;
 };
@@ -48,10 +58,40 @@ type BoostPad = { x: number; z: number; heading: number; cooldown: number };
 type Coin = { mesh: THREE.Mesh; x: number; y: number; z: number; taken: boolean };
 /** A playground on the outer road. `a` is its compass angle; u runs along the road, v points outwards. */
 type Zone = { name: string; a: number; x: number; z: number; group: THREE.Group };
+/** Capital letters on a grid 5 wide and 7 tall, one string per row, for building words out of blocks. */
+const BLOCK_LETTERS: Record<string, string[]> = {
+  A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+  B: ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
+  C: ["01110", "10001", "10000", "10000", "10000", "10001", "01110"],
+  D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+  E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+  F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
+  G: ["01110", "10001", "10000", "10111", "10001", "10001", "01111"],
+  H: ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+  I: ["01110", "00100", "00100", "00100", "00100", "00100", "01110"],
+  J: ["00111", "00010", "00010", "00010", "00010", "10010", "01100"],
+  K: ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+  L: ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
+  M: ["10001", "11011", "10101", "10101", "10001", "10001", "10001"],
+  N: ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+  O: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+  P: ["11110", "10001", "10001", "11110", "10000", "10000", "10000"],
+  Q: ["01110", "10001", "10001", "10001", "10101", "10010", "01101"],
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+  S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+  U: ["10001", "10001", "10001", "10001", "10001", "10001", "01110"],
+  V: ["10001", "10001", "10001", "10001", "10001", "01010", "00100"],
+  W: ["10001", "10001", "10001", "10101", "10101", "10101", "01010"],
+  X: ["10001", "10001", "01010", "00100", "01010", "10001", "10001"],
+  Y: ["10001", "10001", "01010", "00100", "00100", "00100", "00100"],
+  Z: ["11111", "00001", "00010", "00100", "01000", "10000", "11111"],
+};
+
 type Colors = { bg: string; fg: string; muted: string; accent: string; line: string; road: string };
 type Painter = (ctx: CanvasRenderingContext2D, colors: Colors) => void;
 
-type BodyKind = "crate" | "cone" | "pin" | "ball";
+type BodyKind = "crate" | "cone" | "pin" | "ball" | "block";
 type Body = {
   kind: BodyKind;
   mesh: THREE.Object3D;
@@ -80,7 +120,7 @@ const OUTER_RING = 39;
 const PLAY_RING = 60;
 const ZONE_RADIUS = 69;
 const ROAD_HALF_WIDTH = 2.6;
-const NEAR_DISTANCE = 6.5;
+const NEAR_DISTANCE = 8;
 const CAR_RADIUS = 1.35;
 
 const MAX_SPEED = 19;
@@ -91,6 +131,10 @@ const BRAKING = 38;
 const ROLLING_FRICTION = 7;
 const WHEELBASE = 2;
 const MAX_STEER = 0.6;
+/** Share of full steering lock left at top speed. */
+const TOP_SPEED_GRIP = 0.45;
+/** Sideways pull of a full-lock turn at top speed: the hardest the car corners without a boost. */
+const PEAK_CORNERING = ((MAX_SPEED * MAX_SPEED) / WHEELBASE) * Math.tan(MAX_STEER * TOP_SPEED_GRIP);
 const GRAVITY = 22;
 /** Above this height the car clears crates, balls, bumpers and the spinner. */
 const CLEARANCE = 1.3;
@@ -232,7 +276,10 @@ function buildCar(accent: THREE.Color) {
   return { car, tilt, wheels, steering, paint, tail };
 }
 
-export function createWorld(container: HTMLElement, { projects, ownerName, minimap, onNear, onScore }: Options): World {
+export function createWorld(
+  container: HTMLElement,
+  { projects, ownerName, minimap, onNear, onScore, progress }: Options,
+): World {
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
@@ -323,12 +370,9 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     ctx.fillStyle = colors.accent;
     ctx.font = `500 34px ${DISPLAY_FONT}`;
     ctx.fillText("PORTFOLIO", 512, 150);
-    ctx.fillStyle = colors.fg;
-    ctx.font = `700 96px ${DISPLAY_FONT}`;
-    ctx.fillText(ownerName.toUpperCase(), 512, 260, 960);
     ctx.fillStyle = colors.muted;
     ctx.font = `500 38px ${DISPLAY_FONT}`;
-    ctx.fillText("Drive up to a project to open it", 512, 340);
+    ctx.fillText("Drive up to a project to open it", 512, 368);
   });
 
   // -------------------------------------------------------------- stations
@@ -336,6 +380,10 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
   const stations: Station[] = [];
   const obstacles: Obstacle[] = [];
   const labels: { sprite: THREE.Sprite; project: Project }[] = [];
+  // What the props around the stations add to the world. Held back until the scenery is placed, so they don't move it.
+  const propSolids: Obstacle[] = [];
+  const propBalls: (Obstacle & { color: number })[] = [];
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const featured = projects.filter((project) => project.featured);
   const others = projects.filter((project) => !project.featured);
 
@@ -443,6 +491,21 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
 
     group.add(base, screen, ring, sprite);
     scene.add(group);
+
+    // A little scene around the plinth that says what the app is about.
+    // The last argument turns signs and the like to face the camera, which always looks north.
+    const props = buildStationProps(project.slug, project.tint, -group.rotation.y);
+    if (props) {
+      group.add(props.group);
+      group.updateMatrixWorld();
+      const point = new THREE.Vector3();
+      const toWorld = <T extends Obstacle>(solid: T): T => {
+        group.localToWorld(point.set(solid.x, 0, solid.z));
+        return { ...solid, x: point.x, z: point.z };
+      };
+      propSolids.push(...props.solids.map(toWorld));
+      propBalls.push(...props.balls.map(toWorld));
+    }
     // The camera looks north, so the prompt lies on the near side of the station, just outside the ring, where
     // neither the screen nor the parked car hides it.
     let prompt: Station["prompt"];
@@ -457,17 +520,28 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
       scene.add(prompt);
     }
 
-    stations.push({ slug: project.slug, x, z, tint: light, ring, screen, restY, glow: 0, prompt });
+    stations.push({
+      slug: project.slug,
+      x,
+      z,
+      tint: light,
+      ring,
+      screen,
+      restY,
+      glow: 0,
+      update: reducedMotion ? undefined : props?.update,
+      prompt,
+    });
     obstacles.push({ x, z, r: 2.6 * scale });
   }
 
   // Featured work on the inner ring, the rest on the outer one. The first
   // featured project sits due north, straight ahead of the start.
   featured.forEach((project, i) =>
-    addStation(project, INNER_RING + 5.5, Math.PI + (i / featured.length) * Math.PI * 2, 1),
+    addStation(project, INNER_RING + 7.2, Math.PI + (i / featured.length) * Math.PI * 2, 1),
   );
   others.forEach((project, i) =>
-    addStation(project, OUTER_RING + 5.5, Math.PI + ((i + 0.5) / others.length) * Math.PI * 2, 0.85),
+    addStation(project, OUTER_RING + 7, Math.PI + ((i + 0.5) / others.length) * Math.PI * 2, 0.85),
   );
 
   // ------------------------------------------------------- things to push
@@ -512,6 +586,53 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     const mesh = new THREE.Mesh(crateGeometry, crateMaterial);
     mesh.position.y = 0.55;
     return addBody("crate", mesh, x, z, { r: 0.75, mass: 1, friction: 2.4 });
+  }
+
+  // The name lies on the ground at the start as raised blocks, between the two painted lines. Each block is loose, so
+  // driving into the name scatters it; going back to the start puts it together again. The tops take the text colour
+  // and the sides the accent, so the letters stay readable from the camera's angle.
+  const nameTopMaterial = new THREE.MeshStandardMaterial({ roughness: 0.6 });
+  const nameSideMaterial = new THREE.MeshStandardMaterial({ roughness: 0.6 });
+  const nameBlocks: Body[] = [];
+  let nameMesh: THREE.InstancedMesh | null = null;
+  {
+    // Accents are dropped so every letter has a shape: "Bogdanović" is built as "BOGDANOVIC".
+    const letters = [...ownerName.normalize("NFD").toUpperCase()].filter(
+      (letter) => letter === " " || BLOCK_LETTERS[letter],
+    );
+    // Each letter is 5 blocks wide with a 1 block gap; the blocks shrink if the name would run wider than 20 metres.
+    const columns = letters.length * 6 - 1;
+    const size = Math.min(0.21, 20 / columns);
+    const height = 0.4;
+    const middle = 7.6;
+    letters.forEach((letter, index) => {
+      const rows = BLOCK_LETTERS[letter];
+      if (!rows) return;
+      const left = (index * 6 - columns / 2) * size;
+      rows.forEach((row, y) => {
+        for (let x = 0; x < 5; x++) {
+          if (row[x] !== "1") continue;
+          // All the blocks are drawn in one go, so each body moves an empty stand-in that the drawing copies from.
+          const marker = new THREE.Object3D();
+          marker.position.y = height / 2;
+          // Just under half a block wide, so neighbours rest side by side without pushing each other apart.
+          const physics = { r: size * 0.49, mass: 0.2, friction: 2.2 };
+          nameBlocks.push(addBody("block", marker, left + (x + 0.5) * size, middle + (y - 3) * size, physics));
+        }
+      });
+    });
+    // A box's faces come in the order right, left, top, bottom, front, back.
+    const side = nameSideMaterial;
+    nameMesh = new THREE.InstancedMesh(
+      new THREE.BoxGeometry(size, height, size),
+      [side, side, nameTopMaterial, side, side, side],
+      nameBlocks.length,
+    );
+    nameMesh.castShadow = true;
+    nameMesh.receiveShadow = true;
+    // Scattered blocks can end up far from where the name started, so it is never skipped as off screen.
+    nameMesh.frustumCulled = false;
+    scene.add(nameMesh);
   }
 
   // ------------------------------------------------- how to drive, on the ground
@@ -981,14 +1102,14 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
   ];
 
   let scenery = 0;
-  for (let attempt = 0; attempt < 1200 && scenery < 95; attempt++) {
+  for (let attempt = 0; attempt < 1200 && scenery < 45; attempt++) {
     const distance = 8 + random() * (WORLD_RADIUS - 10);
     const angle = random() * Math.PI * 2;
     const x = Math.sin(angle) * distance;
     const z = Math.cos(angle) * distance;
-    const onRoad = [INNER_RING, OUTER_RING, PLAY_RING].some((radius) => Math.abs(distance - radius) < 4.4);
+    const onRoad = [INNER_RING, OUTER_RING, PLAY_RING].some((radius) => Math.abs(distance - radius) < 6.5);
     const crowded =
-      obstacles.some((o) => Math.hypot(o.x - x, o.z - z) < o.r + NEAR_DISTANCE + 1.5) ||
+      obstacles.some((o) => Math.hypot(o.x - x, o.z - z) < o.r + NEAR_DISTANCE + 3) ||
       keepClear.some((o) => Math.hypot(o.x - x, o.z - z) < o.r);
     // Leave a clear run from the start to the first project, due north.
     const onRunway = Math.abs(x) < 4.5 && z < 0 && z > -34;
@@ -1023,6 +1144,9 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     }
     scenery++;
   }
+
+  obstacles.push(...propSolids);
+  for (const ball of propBalls) addBall(ball.x, ball.z, ball.r, ball.color, 0.6);
 
   // -------------------------------------------------------------- confetti
 
@@ -1104,6 +1228,8 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     groundMaterial.color.copy(light ? line : surface);
     roadMaterial.color.copy(light ? surface : raised);
     edgeMaterial.color.copy(light ? muted : line);
+    nameTopMaterial.color.copy(fg);
+    nameSideMaterial.color.copy(accent);
     rockMaterial.color.set(light ? 0xb6bdc9 : 0x3a4252);
     leafMaterial.color.set(light ? 0x3f9d6c : 0x1f6b4a);
     crateMaterial.color.set(light ? 0xe0a04a : 0xc98a3a);
@@ -1183,6 +1309,9 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     boost: 0,
     airborne: false,
   };
+  /** Seconds until the tyres may chirp again. */
+  let squeakWait = 0;
+  let wasStopping = false;
   const cameraTarget = new THREE.Vector3();
   let near: string | null = null;
   let clock = 0;
@@ -1239,6 +1368,32 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     pinsDown = 0;
     pinTimer = 0;
     cameraTarget.set(0, 0, 0);
+  }
+
+  function save(): Progress {
+    return {
+      x: car.x,
+      z: car.z,
+      heading: car.heading,
+      coins: coins.map((coin) => coin.taken),
+      strikes,
+      goals,
+    };
+  }
+
+  // Carry on from an earlier visit: the car parked where it was left, with the coins and score it had.
+  if (progress && progress.coins.length === coins.length) {
+    car.x = progress.x;
+    car.z = progress.z;
+    car.y = heightAt(car.x, car.z);
+    car.heading = progress.heading;
+    cameraTarget.set(car.x, car.y * 0.5, car.z);
+    coins.forEach((coin, index) => {
+      coin.taken = progress.coins[index];
+      coin.mesh.visible = !coin.taken;
+    });
+    strikes = progress.strikes;
+    goals = progress.goals;
   }
 
   function heightAt(x: number, z: number) {
@@ -1314,12 +1469,25 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     car.speed = THREE.MathUtils.clamp(car.speed, -MAX_REVERSE, BOOST_SPEED);
 
     // Steering eases in, and tightens less at speed so the car stays controllable.
-    const grip = 1 - 0.55 * Math.min(Math.abs(car.speed) / MAX_SPEED, 1);
+    const grip = 1 - (1 - TOP_SPEED_GRIP) * Math.min(Math.abs(car.speed) / MAX_SPEED, 1);
     car.steer = THREE.MathUtils.damp(car.steer, turn * MAX_STEER * grip, 9, dt);
     const turnRate = grounded ? (car.speed / WHEELBASE) * Math.tan(car.steer) : 0;
     car.heading += turnRate * dt;
     const lean = THREE.MathUtils.clamp(turnRate * car.speed * 0.012, -0.14, 0.14);
     car.lean = THREE.MathUtils.damp(car.lean, lean, 6, dt);
+
+    // A tyre chirps now and then while a hard turn is held at speed, and once when the car is braked hard at speed.
+    // The brakes sometimes squeak as they bring the car to a stop.
+    const pace = Math.abs(car.speed);
+    const stopping = grounded && (input.brake || (throttle !== 0 && car.speed * throttle < 0));
+    const cornering = Math.abs(turnRate * car.speed) / PEAK_CORNERING;
+    squeakWait = Math.max(0, squeakWait - dt);
+    if (grounded && squeakWait === 0 && (cornering > 0.55 || (stopping && !wasStopping && pace > MAX_SPEED * 0.5))) {
+      sound.squeak("tyre");
+      squeakWait = 0.7 + Math.random() * 1.3;
+    }
+    if (stopping && pace < 2.5 && pace + BRAKING * dt >= 2.5 && Math.random() < 0.6) sound.squeak("brake");
+    wasStopping = stopping;
 
     const decay = Math.exp(-3.2 * dt);
     car.kx *= decay;
@@ -1498,6 +1666,7 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
       (station.ring.material as THREE.MeshBasicMaterial).opacity = 0.22 + station.glow * 0.7;
       station.ring.scale.setScalar(1 - station.glow * 0.06);
       station.screen.position.y = station.restY + station.glow * 0.5;
+      station.update?.(clock, station.glow);
       if (station.prompt) {
         station.prompt.material.opacity = station.glow;
         station.prompt.visible = station.glow > 0.01;
@@ -1626,15 +1795,26 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
       } else if (body.kind === "ball" && speed > 0.05) {
         scratchAxis.set(body.vz / speed, 0, -body.vx / speed);
         body.mesh.rotateOnWorldAxis(scratchAxis, (speed * dt) / body.r);
-      } else if (body.kind === "crate") {
+      } else if (body.kind === "crate" || body.kind === "block") {
         body.mesh.rotateOnWorldAxis(UP, body.spin * dt);
       }
     }
   }
 
+  /** Copies where each block of the name is onto the one mesh that draws them all. */
+  function drawName() {
+    if (!nameMesh) return;
+    nameBlocks.forEach((block, index) => {
+      block.mesh.updateMatrix();
+      nameMesh!.setMatrixAt(index, block.mesh.matrix);
+    });
+    nameMesh.instanceMatrix.needsUpdate = true;
+  }
+
   function draw(dt: number) {
     const speedRatio = Math.min(Math.abs(car.speed) / MAX_SPEED, 1.5);
     sound.engine(speedRatio, input.up !== input.down && !input.brake);
+    drawName();
 
     vehicle.car.position.set(car.x, car.y, car.z);
     vehicle.car.rotation.y = car.heading;
@@ -1830,5 +2010,5 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
   // Development only: lets tests place the car without driving there.
   if (import.meta.env.DEV) Object.assign(window, { __play: { car, zones, at } });
 
-  return { input, reset, horn: sound.horn, boost, setMuted: sound.setMuted, setMusic: sound.setMusic, dispose };
+  return { input, save, reset, horn: sound.horn, boost, setMuted: sound.setMuted, setMusic: sound.setMusic, dispose };
 }

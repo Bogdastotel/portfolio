@@ -8,6 +8,8 @@ export type Sound = {
   setMuted: (muted: boolean) => void;
   /** speed is 0 to 1 of top speed; throttle is true while accelerating. */
   engine: (speed: number, throttle: boolean) => void;
+  /** A short squeak: a tyre chirping in a hard turn, or the brakes squeaking as the car pulls up. */
+  squeak: (kind: "tyre" | "brake") => void;
   /** Hitting something solid. strength is 0 to 1. */
   bump: (strength: number) => void;
   /** Knocking a crate. strength is 0 to 1. */
@@ -29,6 +31,11 @@ export type Sound = {
 };
 
 const VOLUME = 0.55;
+/** Pitch of the engine at a standstill, in hertz. This is the note A, the key the music is in, so the two never clash. */
+const IDLE_PITCH = 55;
+const GEARS = 4;
+/** Each gear starts this much higher than the last, so top gear at top speed lands an octave above idle. */
+const GEAR_STEP = Math.pow(2 / 1.5, 1 / (GEARS - 1));
 /** Music sits well under the effects. */
 const MUSIC_VOLUME = 0.3;
 /** Length of a sixteenth note in seconds: a relaxed 84 beats per minute. */
@@ -49,6 +56,11 @@ export function createSound(): Sound {
   let engineGain: GainNode | null = null;
   let engineFilter: BiquadFilterNode | null = null;
   let oscillators: OscillatorNode[] = [];
+  let chug: OscillatorNode | null = null;
+  let chugDepth: GainNode | null = null;
+  let gear = 0;
+  let lastShift = -1;
+  let lastSqueak = 0;
   let noise: AudioBuffer | null = null;
   let muted = false;
   let lastBump = 0;
@@ -73,24 +85,28 @@ export function createSound(): Sound {
     master.gain.value = muted ? 0 : VOLUME;
     master.connect(context.destination);
 
-    // Engine: two detuned saws and a sub, through a low-pass that opens with speed.
+    // Engine: a soft, low purr built from a note and its clean harmonics (the octave and the fifth above it), with a
+    // gentle pulsing in volume that makes it read as an engine turning over rather than a held note.
     engineFilter = context.createBiquadFilter();
     engineFilter.type = "lowpass";
-    engineFilter.frequency.value = 300;
-    engineFilter.Q.value = 1.2;
+    engineFilter.frequency.value = 320;
+    engineFilter.Q.value = 0.5;
+    const pulse = context.createGain();
+    pulse.gain.value = 0.8;
     engineGain = context.createGain();
     engineGain.gain.value = 0;
-    engineFilter.connect(engineGain).connect(master);
+    engineFilter.connect(pulse).connect(engineGain).connect(master);
     oscillators = (
       [
-        ["sawtooth", 1, 0.5],
-        ["sawtooth", 1.012, 0.5],
-        ["square", 0.5, 0.35],
+        ["triangle", 1, 0.6],
+        ["sine", 2, 0.2],
+        ["sine", 3, 0.1],
+        ["sawtooth", 1, 0.08],
       ] as const
     ).map(([type, ratio, level]) => {
       const oscillator = context!.createOscillator();
       oscillator.type = type;
-      oscillator.frequency.value = 48 * ratio;
+      oscillator.frequency.value = IDLE_PITCH * ratio;
       const gain = context!.createGain();
       gain.gain.value = level;
       oscillator.connect(gain).connect(engineFilter!);
@@ -98,6 +114,13 @@ export function createSound(): Sound {
       (oscillator as OscillatorNode & { ratio: number }).ratio = ratio;
       return oscillator;
     });
+    chug = context.createOscillator();
+    chug.type = "sine";
+    chug.frequency.value = 9;
+    chugDepth = context.createGain();
+    chugDepth.gain.value = 0.28;
+    chug.connect(chugDepth).connect(pulse.gain);
+    chug.start();
 
     // One second of white noise, reused for impacts.
     noise = context.createBuffer(1, context.sampleRate, context.sampleRate);
@@ -179,13 +202,111 @@ export function createSound(): Sound {
   function engine(speed: number, throttle: boolean) {
     if (!context || !engineGain || !engineFilter) return;
     const now = context.currentTime;
-    const pitch = 48 + speed * 105 + (throttle ? 8 : 0);
+
+    // Revs climb through each gear and drop back on the shift. A gear is held a little below the speed it was
+    // entered at, so the pitch does not flutter when the car sits on a boundary.
+    const previous = gear;
+    while (gear < GEARS - 1 && speed > (gear + 1) / GEARS) gear++;
+    while (gear > 0 && speed < gear / GEARS - 0.04) gear--;
+    if (gear !== previous) lastShift = now;
+    const shifting = now - lastShift < 0.12;
+    const revs = Math.min(speed * GEARS - gear, 2);
+    const pitch = IDLE_PITCH * Math.pow(GEAR_STEP, gear) * (1 + 0.5 * revs) + (throttle ? 4 : 0);
+
     for (const oscillator of oscillators) {
       const ratio = (oscillator as OscillatorNode & { ratio: number }).ratio;
-      oscillator.frequency.setTargetAtTime(pitch * ratio, now, 0.08);
+      oscillator.frequency.setTargetAtTime(pitch * ratio, now, shifting ? 0.05 : 0.12);
     }
-    engineFilter.frequency.setTargetAtTime(260 + speed * 900 + (throttle ? 250 : 0), now, 0.1);
-    engineGain.gain.setTargetAtTime(0.035 + speed * 0.05 + (throttle ? 0.02 : 0), now, 0.1);
+    // The tick-over is lazy and pronounced at idle, then quickens and smooths out as the car gets going.
+    const pace = Math.min(speed, 1);
+    chug?.frequency.setTargetAtTime(9 + pace * 20, now, 0.12);
+    chugDepth?.gain.setTargetAtTime(0.28 - pace * 0.18, now, 0.2);
+    engineFilter.frequency.setTargetAtTime(300 + pace * 400 + (throttle ? 200 : 0), now, 0.15);
+    const level = 0.05 + pace * 0.035 + (throttle ? 0.02 : 0);
+    // A brief dip in volume makes each shift audible.
+    engineGain.gain.setTargetAtTime(shifting ? level * 0.55 : level, now, shifting ? 0.02 : 0.15);
+  }
+
+  function squeak(kind: "tyre" | "brake") {
+    if (!context || !master || !noise) return;
+    const now = context.currentTime;
+    if (now - lastSqueak < 0.35) return;
+    lastSqueak = now;
+
+    // Rubber and brake pads squeal by gripping and slipping hundreds of times a second, which gives a buzzy, rough
+    // note that holds its pitch but never sits perfectly still. A clean tone that slides in pitch sounds like an
+    // animal instead, so this is a harsh wave with a jittering pitch and a fast flutter in volume, mixed with noise
+    // squeezed around the same pitch for the scrub of the tyre on the road.
+    const tyre = kind === "tyre";
+    const pitch = tyre ? 720 + Math.random() * 220 : 1250 + Math.random() * 350;
+    const duration = tyre ? 0.28 + Math.random() * 0.3 : 0.35 + Math.random() * 0.3;
+    const level = tyre ? 0.06 : 0.03;
+    const end = now + duration + 0.05;
+
+    const envelope = context.createGain();
+    envelope.gain.setValueAtTime(0.0001, now);
+    envelope.gain.exponentialRampToValueAtTime(level, now + 0.04);
+    envelope.gain.setValueAtTime(level, now + duration * 0.65);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    envelope.connect(master);
+
+    // Flutter: the volume shudders quickly, as the grip catches and lets go.
+    const flutter = context.createGain();
+    flutter.gain.value = 0.65;
+    flutter.connect(envelope);
+    const shudder = context.createOscillator();
+    shudder.type = "sawtooth";
+    shudder.frequency.value = 45 + Math.random() * 35;
+    const shudderDepth = context.createGain();
+    shudderDepth.gain.value = 0.35;
+    shudder.connect(shudderDepth).connect(flutter.gain);
+    shudder.start(now);
+    shudder.stop(end);
+
+    // Everything passes through a band around the pitch, which takes the fizz off the top and the boom off the bottom.
+    const body = context.createBiquadFilter();
+    body.type = "bandpass";
+    body.frequency.value = pitch * 1.4;
+    body.Q.value = 0.9;
+    body.connect(flutter);
+
+    // The note itself, with its pitch pushed around by noise played back very slowly.
+    const oscillator = context.createOscillator();
+    oscillator.type = "sawtooth";
+    oscillator.frequency.value = pitch;
+    const jitter = context.createBufferSource();
+    jitter.buffer = noise;
+    jitter.loop = true;
+    jitter.playbackRate.value = 0.004;
+    const jitterDepth = context.createGain();
+    jitterDepth.gain.value = pitch * (tyre ? 0.05 : 0.02);
+    jitter.connect(jitterDepth).connect(oscillator.frequency);
+    const voice = context.createGain();
+    voice.gain.value = tyre ? 0.35 : 0.6;
+    oscillator.connect(voice).connect(body);
+    oscillator.start(now);
+    oscillator.stop(end);
+    jitter.start(now, Math.random() * 0.9);
+    jitter.stop(end);
+
+    // Scrub: noise ringing at the pitch and again roughly an octave above it.
+    const scrub = context.createBufferSource();
+    scrub.buffer = noise;
+    scrub.loop = true;
+    for (const [ratio, gain] of [
+      [1, tyre ? 5 : 1.5],
+      [2.1, tyre ? 2.5 : 0.8],
+    ]) {
+      const filter = context.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.value = pitch * ratio;
+      filter.Q.value = 12;
+      const amount = context.createGain();
+      amount.gain.value = gain;
+      scrub.connect(filter).connect(amount).connect(body);
+    }
+    scrub.start(now, Math.random() * 0.9);
+    scrub.stop(end);
   }
 
   function burst(duration: number, frequency: number, level: number) {
@@ -271,10 +392,12 @@ export function createSound(): Sound {
   function dispose() {
     for (const oscillator of oscillators) oscillator.stop();
     oscillators = [];
+    chug?.stop();
+    chug = null;
     window.clearInterval(musicTimer);
     void context?.close();
     context = null;
   }
 
-  return { unlock, setMuted, engine, bump, knock, chime, coin, boost, boing, fanfare, horn, setMusic, dispose };
+  return { unlock, setMuted, engine, squeak, bump, knock, chime, coin, boost, boing, fanfare, horn, setMusic, dispose };
 }
