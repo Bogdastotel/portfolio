@@ -8,8 +8,7 @@ export const profile = {
   github: "https://github.com/Bogdastotel",
   linkedin: "https://www.linkedin.com/in/nikola-bogdanovic-082752177/",
   cv: "/cv/Nikola-Bogdanovic-CV.pdf",
-  // TODO: drop a headshot in public/images/ and set its path here.
-  photo: "",
+  photo: "/images/profile/nikola.jpg",
 
   headline: "Web, mobile and backend, built end to end.",
   intro:

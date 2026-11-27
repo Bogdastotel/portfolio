@@ -19,6 +19,10 @@ export type Project = {
   links: { label: string; href: string }[];
   /** Paths under /images/projects/<slug>/; a styled placeholder shows while empty. */
   screenshots: { src: string; alt: string }[];
+  /** A wide image for the case study header, for projects (such as web apps) without phone screenshots. */
+  cover?: { src: string; alt: string };
+  /** A logo or brand image for the screen in the 3D world, used when there is no screenshot. */
+  logo?: string;
   /** Two colours for the placeholder artwork. */
   tint: [string, string];
   /** Shown as a badge; leave out when the release state is not confirmed. */
@@ -251,7 +255,12 @@ export const projects: Project[] = [
     // REVIEW: assumed from the other Knguru apps.
     stack: ["React Native", "Expo"],
     links: [{ label: "App Store", href: "https://apps.apple.com/app/id6754256101" }],
-    screenshots: [],
+    screenshots: [
+      {
+        src: "/images/projects/dark-stories/saved-stories.jpg",
+        alt: "Dark Stories story cards, with the option to save the stories you love.",
+      },
+    ],
     status: "Live",
     tint: ["#b3261e", "#1a0504"],
   },
@@ -277,7 +286,12 @@ export const projects: Project[] = [
     stack: ["React Native", "Expo", "TypeScript", "Supabase", "RevenueCat"],
     // REVIEW: add store links after release.
     links: [],
-    screenshots: [],
+    screenshots: [
+      {
+        src: "/images/projects/bedtime-stories/player.jpg",
+        alt: "Bedtime Stories audio player with the up-next queue.",
+      },
+    ],
     status: "Production-ready",
     tint: ["#4f6bd8", "#0e1740"],
   },
@@ -326,7 +340,12 @@ export const projects: Project[] = [
     outcomes: [],
     stack: ["React Native", "Symfony"],
     links: [{ label: "App Store", href: "https://apps.apple.com/app/id1547960588" }],
-    screenshots: [],
+    screenshots: [
+      {
+        src: "/images/projects/ms-fitness/exercise.jpg",
+        alt: "MS Fitness exercise screen for the deadlift, with muscle diagram, sets and a video tutorial.",
+      },
+    ],
     status: "Live",
     tint: ["#12b5a6", "#063b36"],
   },
@@ -353,7 +372,12 @@ export const projects: Project[] = [
       { label: "Website", href: "https://troskovi.com" },
       { label: "Google Play", href: "https://play.google.com/store/apps/details?id=com.troskovi" },
     ],
-    screenshots: [],
+    screenshots: [
+      {
+        src: "/images/projects/troskovi/bill-overview.jpg",
+        alt: "Troskovi bill overview: current balance, payment efficiency and monthly charges.",
+      },
+    ],
     status: "Live",
     tint: ["#3f9bd6", "#0b2a40"],
   },
@@ -377,7 +401,12 @@ export const projects: Project[] = [
     stack: ["React Native"],
     // REVIEW: the App Store listing (id1551123480) returned 404, so no link and no status.
     links: [],
-    screenshots: [],
+    screenshots: [
+      {
+        src: "/images/projects/and-repeat/onboarding.jpg",
+        alt: "&Repeat onboarding screen: earn, redeem, enjoy and repeat.",
+      },
+    ],
     tint: ["#5fb04a", "#16300f"],
   },
   {
@@ -399,6 +428,11 @@ export const projects: Project[] = [
     stack: ["Angular", "React", "Redux", "TypeScript", "Node.js", "SASS"],
     links: [{ label: "Website", href: "https://www.brame.io/" }],
     screenshots: [],
+    cover: {
+      src: "/images/projects/brame/cover.jpg",
+      alt: "Brame illustration: a branded game card surrounded by reward and settings widgets.",
+    },
+    logo: "/images/projects/brame/logo.png",
     status: "Live",
     tint: ["#f25fa0", "#3d0f27"],
   },

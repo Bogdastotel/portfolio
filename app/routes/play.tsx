@@ -17,20 +17,26 @@ export function meta() {
 
 type Status = "loading" | "ready" | "failed";
 
+/** Driving inputs are held down; the rest fire once per tap. */
+type PadAction = keyof WorldInput | "horn" | "boost" | "reset";
+
 type PadProps = {
   label: string;
-  action: keyof WorldInput;
-  onPress: (action: keyof WorldInput, value: boolean) => void;
+  action: PadAction;
+  /** Called with true when the button goes down and false when it is let go. */
+  onPress: (action: PadAction, down: boolean) => void;
+  /** One-shot actions get a smaller, text-sized label. */
+  small?: boolean;
   children: React.ReactNode;
 };
 
 /** On-screen control for touch devices: held down means the input is on. */
-function PadButton({ label, action, onPress, children }: PadProps) {
+function PadButton({ label, action, onPress, small = false, children }: PadProps) {
   return (
     <button
       type="button"
       aria-label={label}
-      className="flex size-14 touch-none select-none items-center justify-center rounded-2xl border border-line bg-surface/85 text-xl text-fg backdrop-blur active:bg-accent active:text-accent-fg"
+      className={`flex size-14 touch-none select-none items-center justify-center rounded-2xl border border-line bg-surface/85 text-fg backdrop-blur active:bg-accent active:text-accent-fg ${small ? "font-mono text-[0.65rem] uppercase tracking-wider" : "text-xl"}`}
       onPointerDown={() => onPress(action, true)}
       onPointerUp={() => onPress(action, false)}
       onPointerLeave={() => onPress(action, false)}
@@ -99,13 +105,39 @@ export default function Play() {
   useEffect(() => {
     if (!nearSlug) return;
     function onKeyDown(event: KeyboardEvent) {
-      if (event.code !== "Enter") return;
-      if (event.target instanceof HTMLElement && event.target.closest("a, button")) return;
+      // `key` also covers the numpad Enter, which has its own `code`.
+      if (event.key !== "Enter" || event.repeat) return;
+      // A control reached with Tab keeps Enter for itself.
+      if (event.target instanceof HTMLElement && event.target.closest("a, button, summary")) return;
+      event.preventDefault();
       navigate(`/work/${nearSlug}`);
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [nearSlug, navigate]);
+
+  // M mutes and unmutes, the same as the Sound button.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.code !== "KeyM" || event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select")) return;
+      setMuted((value) => !value);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  // A button clicked with the mouse would keep focus and swallow Enter (and Space) while driving.
+  useEffect(() => {
+    function onClick(event: MouseEvent) {
+      // `detail` is 0 for clicks made from the keyboard; those keep their focus.
+      if (event.detail === 0) return;
+      const focused = document.activeElement;
+      if (focused instanceof HTMLElement && focused.matches("button, summary")) focused.blur();
+    }
+    window.addEventListener("click", onClick);
+    return () => window.removeEventListener("click", onClick);
+  }, []);
 
   // Keep the world's sound in step with the toggle, and remember the choice.
   useEffect(() => {
@@ -120,8 +152,14 @@ export default function Play() {
     }
   }, [muted, music, status]);
 
-  function press(action: keyof WorldInput, value: boolean) {
-    if (world.current) world.current.input[action] = value;
+  function press(action: PadAction, down: boolean) {
+    const current = world.current;
+    if (!current) return;
+    if (action === "horn" || action === "boost" || action === "reset") {
+      if (down) current[action]();
+    } else {
+      current.input[action] = down;
+    }
   }
 
   return (
@@ -133,7 +171,7 @@ export default function Play() {
           <h1 id="play-title" className="font-display text-lg font-semibold tracking-tight">
             Explore in 3D
           </h1>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 hidden text-sm text-muted sm:block">
             Drive up to a project to see it. The outer road has a bowling lane, a football pitch, a stunt park and
             bumpers.
           </p>
@@ -159,18 +197,37 @@ export default function Play() {
               </div>
             </dl>
           )}
-          <dl className="mt-3 hidden grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-mono text-xs text-muted pointer-fine:grid">
-            <dt className="text-fg">WASD / arrows</dt>
-            <dd>drive</dd>
-            <dt className="text-fg">Space</dt>
-            <dd>brake</dd>
-            <dt className="text-fg">Enter</dt>
-            <dd>open project</dd>
-            <dt className="text-fg">H</dt>
-            <dd>horn</dd>
-            <dt className="text-fg">R</dt>
-            <dd>back to start</dd>
-          </dl>
+          <details className="group mt-3 hidden font-mono text-xs text-muted pointer-fine:block">
+            <summary className="flex cursor-pointer list-none items-center gap-1.5 text-fg [&::-webkit-details-marker]:hidden">
+              Controls
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 12 12"
+                className="size-3 transition-transform group-open:rotate-180"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <path d="M2.5 4.5 6 8l3.5-3.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </summary>
+            <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+              <dt className="text-fg">WASD / arrows</dt>
+              <dd>drive</dd>
+              <dt className="text-fg">Space</dt>
+              <dd>brake</dd>
+              <dt className="text-fg">Shift</dt>
+              <dd>boost</dd>
+              <dt className="text-fg">Enter</dt>
+              <dd>open project</dd>
+              <dt className="text-fg">H</dt>
+              <dd>horn</dd>
+              <dt className="text-fg">M</dt>
+              <dd>mute</dd>
+              <dt className="text-fg">R</dt>
+              <dd>back to start</dd>
+            </dl>
+          </details>
         </div>
         <div className="flex flex-col items-end gap-3">
           <div className="pointer-events-auto flex items-center gap-2">
@@ -227,7 +284,7 @@ export default function Play() {
 
       <div
         aria-live="polite"
-        className="pointer-events-none absolute inset-x-0 bottom-24 flex justify-center px-4 sm:bottom-8"
+        className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-center px-4 pointer-coarse:bottom-40"
       >
         {near && (
           <article className="pointer-events-auto w-full max-w-md rounded-2xl border border-line bg-surface/95 p-5 shadow-2xl backdrop-blur">
@@ -254,7 +311,11 @@ export default function Play() {
 
       {status === "ready" && (
         <div className="pointer-events-none absolute inset-x-0 bottom-4 hidden items-end justify-between px-4 pointer-coarse:flex">
-          <div className="pointer-events-auto flex gap-3">
+          <div className="pointer-events-auto grid grid-cols-2 gap-3">
+            <PadButton label="Back to start" small action="reset" onPress={press}>
+              Reset
+            </PadButton>
+            <span />
             <PadButton label="Steer left" action="left" onPress={press}>
               ←
             </PadButton>
@@ -262,7 +323,13 @@ export default function Play() {
               →
             </PadButton>
           </div>
-          <div className="pointer-events-auto flex gap-3">
+          <div className="pointer-events-auto grid grid-cols-2 gap-3">
+            <PadButton label="Horn" small action="horn" onPress={press}>
+              Horn
+            </PadButton>
+            <PadButton label="Boost" small action="boost" onPress={press}>
+              Boost
+            </PadButton>
             <PadButton label="Reverse" action="down" onPress={press}>
               ↓
             </PadButton>

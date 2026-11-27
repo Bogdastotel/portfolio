@@ -30,7 +30,8 @@ export function PlayPromo() {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_20rem_at_100%_0%,var(--accent),transparent_70%)] opacity-15"
       />
 
-      <div className="relative p-6 sm:p-8">
+      {/* `isolate` lifts the text above the glow without trapping the link's stretched hit area inside this column. */}
+      <div className="isolate p-6 sm:p-8">
         <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-accent">
           <span aria-hidden="true" className="relative flex size-2">
             <span className="promo-ping absolute inline-flex size-full rounded-full bg-accent opacity-60" />
@@ -53,7 +54,7 @@ export function PlayPromo() {
         <p className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
           <span
             aria-hidden="true"
-            className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-fg transition-transform group-hover:translate-x-1"
+            className="pointer-events-none inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-fg transition-transform group-hover:translate-x-1"
           >
             Start driving →
           </span>
@@ -61,7 +62,10 @@ export function PlayPromo() {
         </p>
       </div>
 
-      <div aria-hidden="true" className="relative min-h-40 border-t border-line bg-raised md:border-l md:border-t-0">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none relative min-h-40 border-t border-line bg-raised md:border-l md:border-t-0"
+      >
         <svg viewBox="0 0 320 170" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
           <path d={ROAD} fill="none" stroke="var(--line)" strokeWidth="26" strokeLinecap="round" />
           <path

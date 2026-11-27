@@ -36,4 +36,4 @@ Screenshots go in `public/images/projects/<slug>/` and are referenced from `proj
 
 ## Deploy
 
-Static output in `build/client`; `vercel.json` configures Vercel. Set `VITE_SITE_URL` to the production origin (for example `https://example.com`) to turn on canonical and Open Graph URL tags, the share image (`public/og/default.png`) and a generated `sitemap.xml` with a matching `robots.txt`.
+Static output in `build/client`; `vercel.json` configures Vercel. The site URL turns on canonical and Open Graph URL tags, the share image (`public/og/default.png`) and a generated `sitemap.xml` with a matching `robots.txt`. On Vercel it is taken from the project's production domain automatically. Set `VITE_SITE_URL` (for example `https://example.com`) to override it, or on any other host.

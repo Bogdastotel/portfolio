@@ -12,6 +12,8 @@ export type World = {
   input: WorldInput;
   reset: () => void;
   horn: () => void;
+  /** A short burst of speed, with a few seconds to recharge. */
+  boost: () => void;
   setMuted: (muted: boolean) => void;
   setMusic: (on: boolean) => void;
   dispose: () => void;
@@ -36,6 +38,8 @@ type Station = {
   screen: THREE.Object3D;
   restY: number;
   glow: number;
+  /** "Enter to open" painted beside the station; missing on touch screens. */
+  prompt?: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;
 };
 type Obstacle = { x: number; z: number; r: number };
 type Bumper = Obstacle & { material: THREE.MeshStandardMaterial; flash: number };
@@ -335,6 +339,35 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
   const featured = projects.filter((project) => project.featured);
   const others = projects.filter((project) => !project.featured);
 
+  const textureLoader = new THREE.TextureLoader();
+  const keyboard = window.matchMedia("(pointer: fine)").matches;
+
+  // One "Enter to open" decal, shared by every station and faded in beside the one the car is at.
+  const promptCanvas = document.createElement("canvas");
+  promptCanvas.width = 512;
+  promptCanvas.height = 112;
+  const promptTexture = new THREE.CanvasTexture(promptCanvas);
+  promptTexture.colorSpace = THREE.SRGBColorSpace;
+  promptTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const promptGeometry = new THREE.PlaneGeometry(5.6, 1.225);
+  groundTexts.push({
+    canvas: promptCanvas,
+    texture: promptTexture,
+    draw: (ctx, colors) => {
+      ctx.fillStyle = colors.fg;
+      ctx.strokeStyle = colors.fg;
+      ctx.lineWidth = 5;
+      ctx.font = `italic 700 50px ${DISPLAY_FONT}`;
+      ctx.textBaseline = "middle";
+      const boxWidth = ctx.measureText("ENTER").width + 56;
+      ctx.strokeRect(6, 16, boxWidth, 80);
+      ctx.textAlign = "center";
+      ctx.fillText("ENTER", 6 + boxWidth / 2, 59);
+      ctx.textAlign = "left";
+      ctx.fillText("TO OPEN", boxWidth + 40, 59, 500 - boxWidth - 40);
+    },
+  });
+
   function addStation(project: Project, radius: number, angle: number, scale: number) {
     const x = Math.sin(angle) * radius;
     const z = Math.cos(angle) * radius;
@@ -359,7 +392,7 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
       new THREE.BoxGeometry(width, height, 0.28),
       new THREE.MeshStandardMaterial({ color: 0x0c0f14, roughness: 0.4, metalness: 0.3 }),
     );
-    const face = new THREE.Mesh(
+    const face = new THREE.Mesh<THREE.PlaneGeometry, THREE.Material>(
       new THREE.PlaneGeometry(width - 0.24, height - 0.24),
       new THREE.MeshStandardMaterial({ color: light, emissive: light, emissiveIntensity: 0.55, roughness: 0.5 }),
     );
@@ -369,6 +402,31 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     back.position.z = -0.145;
     frame.castShadow = true;
     screen.add(frame, face, back);
+
+    // Show the project's first screenshot (or its logo) on both faces; the tinted glow stays until it loads, or if
+    // there is neither.
+    const shot = project.screenshots[0]?.src;
+    const image = shot ?? project.logo;
+    if (image) {
+      textureLoader.load(image, (texture) => {
+        if (disposed) return texture.dispose();
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        // Crop to fill the face, keeping the top of a screenshot in view and a logo centred.
+        const imageAspect = texture.image.width / texture.image.height;
+        const faceAspect = (width - 0.24) / (height - 0.24);
+        if (imageAspect > faceAspect) {
+          texture.repeat.x = faceAspect / imageAspect;
+          texture.offset.x = (1 - texture.repeat.x) / 2;
+        } else {
+          texture.repeat.y = imageAspect / faceAspect;
+          texture.offset.y = (1 - texture.repeat.y) * (shot ? 1 : 0.5);
+        }
+        const placeholder = face.material;
+        face.material = back.material = new THREE.MeshBasicMaterial({ map: texture });
+        placeholder.dispose();
+      });
+    }
     const restY = 0.4 + height / 2 + 0.35;
     screen.position.y = restY;
 
@@ -385,7 +443,21 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
 
     group.add(base, screen, ring, sprite);
     scene.add(group);
-    stations.push({ slug: project.slug, x, z, tint: light, ring, screen, restY, glow: 0 });
+    // The camera looks north, so the prompt lies on the near side of the station, just outside the ring, where
+    // neither the screen nor the parked car hides it.
+    let prompt: Station["prompt"];
+    if (keyboard) {
+      prompt = new THREE.Mesh(
+        promptGeometry,
+        new THREE.MeshBasicMaterial({ map: promptTexture, transparent: true, opacity: 0, depthWrite: false }),
+      );
+      prompt.rotation.x = -Math.PI / 2;
+      prompt.position.set(x, 0.045, z + NEAR_DISTANCE + 1.1);
+      prompt.visible = false;
+      scene.add(prompt);
+    }
+
+    stations.push({ slug: project.slug, x, z, tint: light, ring, screen, restY, glow: 0, prompt });
     obstacles.push({ x, z, r: 2.6 * scale });
   }
 
@@ -440,6 +512,113 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     const mesh = new THREE.Mesh(crateGeometry, crateMaterial);
     mesh.position.y = 0.55;
     return addBody("crate", mesh, x, z, { r: 0.75, mass: 1, friction: 2.4 });
+  }
+
+  // ------------------------------------------------- how to drive, on the ground
+
+  // Keyboard instructions sit either side of the start. Touch screens get the on-screen pad instead.
+  const HOW_TO_MOVE = { x: -12, z: -1.5, width: 12, height: 5 };
+  const HOW_TO_KEYS = { x: 12.5, z: 0.6, width: 11, height: 8.4 };
+  const HINT_FONT = `italic 700 72px ${DISPLAY_FONT}`;
+
+  if (keyboard) {
+    // Where the arrow keys stand, in canvas pixels of the decal below.
+    const keyColumn = 580;
+    const keyPitch = 100;
+    const keyRows = [110, 210];
+
+    groundText(HOW_TO_MOVE.x, HOW_TO_MOVE.z, HOW_TO_MOVE.width, HOW_TO_MOVE.height, (ctx, colors) => {
+      ctx.fillStyle = colors.fg;
+      ctx.font = HINT_FONT;
+      ctx.textAlign = "right";
+      ctx.fillText("USE YOUR", keyColumn - keyPitch * 1.5 - 30, 185, 380);
+      ctx.textAlign = "left";
+      ctx.fillText("KEYS", keyColumn + keyPitch * 1.5 + 30, 235, 250);
+      ctx.textAlign = "center";
+      ctx.fillText("TO MOVE AROUND", 470, 345, 900);
+    });
+
+    const arrowCanvas = document.createElement("canvas");
+    arrowCanvas.width = arrowCanvas.height = 64;
+    const arrowCtx = arrowCanvas.getContext("2d")!;
+    arrowCtx.fillStyle = "#8a909b";
+    arrowCtx.beginPath();
+    arrowCtx.moveTo(32, 16);
+    arrowCtx.lineTo(52, 46);
+    arrowCtx.lineTo(12, 46);
+    arrowCtx.fill();
+    const arrowTexture = new THREE.CanvasTexture(arrowCanvas);
+    arrowTexture.colorSpace = THREE.SRGBColorSpace;
+
+    // A tapered square cap: a four-sided cylinder turned so its faces line up with the axes.
+    const capGeometry = new THREE.CylinderGeometry(0.56, 0.74, 0.5, 4).rotateY(Math.PI / 4);
+    const capMaterial = new THREE.MeshStandardMaterial({ color: 0xf1f2f4, roughness: 0.55, flatShading: true });
+    const arrowGeometry = new THREE.PlaneGeometry(0.46, 0.46);
+    const arrowMaterial = new THREE.MeshBasicMaterial({ map: arrowTexture, transparent: true, depthWrite: false });
+
+    const pixel = HOW_TO_MOVE.width / 1024;
+    // Column, row, and which way the arrow points (turning anticlockwise from up).
+    const arrowKeys: [number, number, number][] = [
+      [0, 0, 0],
+      [-1, 1, Math.PI / 2],
+      [0, 1, Math.PI],
+      [1, 1, -Math.PI / 2],
+    ];
+    for (const [column, row, turn] of arrowKeys) {
+      const key = new THREE.Group();
+      const cap = new THREE.Mesh(capGeometry, capMaterial);
+      cap.position.y = 0.25;
+      const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
+      arrow.rotation.set(-Math.PI / 2, 0, turn);
+      arrow.position.y = 0.505;
+      key.add(cap, arrow);
+      addBody(
+        "crate",
+        key,
+        HOW_TO_MOVE.x - HOW_TO_MOVE.width / 2 + (keyColumn + column * keyPitch) * pixel,
+        HOW_TO_MOVE.z - HOW_TO_MOVE.height / 2 + keyRows[row] * pixel,
+        { r: 0.55, mass: 0.5, friction: 2.6 },
+      );
+      // The flat arrow should neither cast a shadow nor be shaded by one.
+      arrow.castShadow = false;
+      arrow.receiveShadow = false;
+    }
+
+    const shortcuts: [string, string][] = [
+      ["W A S D", "DRIVE"],
+      ["SPACE", "BRAKE"],
+      ["SHIFT", "BOOST"],
+      ["H", "HONK"],
+      ["M", "MUTE"],
+      ["R", "BACK TO START"],
+      ["ENTER", "OPEN PROJECT"],
+    ];
+    groundText(HOW_TO_KEYS.x, HOW_TO_KEYS.z, HOW_TO_KEYS.width, HOW_TO_KEYS.height, (ctx, colors) => {
+      ctx.fillStyle = colors.fg;
+      ctx.strokeStyle = colors.fg;
+      ctx.lineWidth = 5;
+      ctx.font = `italic 700 46px ${DISPLAY_FONT}`;
+      ctx.textBaseline = "middle";
+      shortcuts.forEach(([key, action], index) => {
+        const y = 90 + index * 100;
+        const boxWidth = ctx.measureText(key).width + 52;
+        ctx.strokeRect(400 - boxWidth, y - 36, boxWidth, 72);
+        ctx.textAlign = "center";
+        ctx.fillText(key, 400 - boxWidth / 2, y + 3);
+        ctx.textAlign = "left";
+        ctx.fillText(action, 450, y + 3, 540);
+      });
+    });
+  } else {
+    // Touch screens drive with the on-screen pad.
+    // Phones are narrow, so the hint goes straight ahead of the car rather than off to one side.
+    groundText(0, -6, 12, 3.84, (ctx, colors) => {
+      ctx.fillStyle = colors.fg;
+      ctx.font = HINT_FONT;
+      ctx.textAlign = "center";
+      ctx.fillText("USE THE BUTTONS", 512, 140, 960);
+      ctx.fillText("TO DRIVE AROUND", 512, 250, 960);
+    });
   }
 
   const coneMaterial = new THREE.MeshStandardMaterial({ color: 0xff7a1a, roughness: 0.6 });
@@ -797,6 +976,8 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     { x: -11, z: -10.5, r: 5 },
     { x: 0, z: 7.5, r: 12 },
     { x: 0, z: 0, r: 6 },
+    { x: HOW_TO_MOVE.x, z: HOW_TO_MOVE.z, r: 7 },
+    { x: HOW_TO_KEYS.x, z: HOW_TO_KEYS.z, r: 7 },
   ];
 
   let scenery = 0;
@@ -1039,7 +1220,19 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     body.mesh.position.z = body.z;
   }
 
+  // Boosting by hand needs a moment to recharge, so it stays a treat rather than the normal way to drive.
+  const BOOST_RECHARGE = 4;
+  let boostWait = 0;
+  function boost() {
+    if (boostWait > 0 || car.airborne || car.speed < 0) return;
+    boostWait = BOOST_RECHARGE;
+    car.boost = 1.2;
+    car.speed = Math.max(car.speed, BOOST_SPEED);
+    sound.boost();
+  }
+
   function reset() {
+    boostWait = 0;
     Object.assign(car, { x: 0, z: 0, y: 0, vy: 0, heading: START_HEADING, speed: 0, steer: 0, lean: 0 });
     Object.assign(car, { kx: 0, kz: 0, boost: 0, pitch: 0, airborne: false });
     bodies.forEach(restBody);
@@ -1109,13 +1302,14 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
       } else if (throttle !== 0) {
         const opposing = Math.sign(car.speed) !== 0 && Math.sign(car.speed) !== throttle;
         const next = car.speed + throttle * (opposing ? BRAKING : ACCELERATION) * dt;
-        // The engine alone tops out at MAX_SPEED; only a boost pad goes beyond it.
+        // The engine alone tops out at MAX_SPEED; only a boost goes beyond it.
         car.speed = car.speed > MAX_SPEED ? Math.min(car.speed, next) : Math.min(next, MAX_SPEED);
       } else {
         car.speed -= Math.sign(car.speed) * Math.min(Math.abs(car.speed), ROLLING_FRICTION * dt);
       }
     }
     car.boost = Math.max(0, car.boost - dt);
+    boostWait = Math.max(0, boostWait - dt);
     if (car.speed > MAX_SPEED && car.boost === 0) car.speed = Math.max(MAX_SPEED, car.speed - 14 * dt);
     car.speed = THREE.MathUtils.clamp(car.speed, -MAX_REVERSE, BOOST_SPEED);
 
@@ -1304,6 +1498,10 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
       (station.ring.material as THREE.MeshBasicMaterial).opacity = 0.22 + station.glow * 0.7;
       station.ring.scale.setScalar(1 - station.glow * 0.06);
       station.screen.position.y = station.restY + station.glow * 0.5;
+      if (station.prompt) {
+        station.prompt.material.opacity = station.glow;
+        station.prompt.visible = station.glow > 0.01;
+      }
     }
 
     stepConfetti(dt);
@@ -1453,6 +1651,9 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
     cameraTarget.y = THREE.MathUtils.damp(cameraTarget.y, car.y * 0.5, 4, dt);
     const pullBack = Math.max(1, 1.35 / camera.aspect) * (1 + Math.max(0, speedRatio - 1) * 0.25);
     camera.position.set(cameraTarget.x, 36 * pullBack + cameraTarget.y, cameraTarget.z + 31 * pullBack);
+    // On tall screens the camera backs away; the fog backs away with it, or the whole scene would sit in the haze.
+    fog.near = 60 * pullBack;
+    fog.far = 150 * pullBack;
     camera.lookAt(cameraTarget.x, 0.5 + cameraTarget.y, cameraTarget.z);
 
     sun.position.set(car.x + 24, 40, car.z + 10);
@@ -1559,6 +1760,10 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
       if (!event.repeat) sound.horn();
       return;
     }
+    if (event.code === "ShiftLeft" || event.code === "ShiftRight") {
+      if (!event.repeat) boost();
+      return;
+    }
     const action = keys[event.code];
     if (!action) return;
     // Space keeps working on focused buttons and links.
@@ -1625,5 +1830,5 @@ export function createWorld(container: HTMLElement, { projects, ownerName, minim
   // Development only: lets tests place the car without driving there.
   if (import.meta.env.DEV) Object.assign(window, { __play: { car, zones, at } });
 
-  return { input, reset, horn: sound.horn, setMuted: sound.setMuted, setMusic: sound.setMusic, dispose };
+  return { input, reset, horn: sound.horn, boost, setMuted: sound.setMuted, setMusic: sound.setMusic, dispose };
 }

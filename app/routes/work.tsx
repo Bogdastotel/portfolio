@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { NotFound } from "~/components/NotFound";
 import { ButtonLink } from "~/components/ui/Button";
 import { PhoneFrame } from "~/components/ui/PhoneFrame";
+import { ProjectDoodles } from "~/components/ui/ProjectDoodles";
 import { StatusBadge } from "~/components/ui/StatusBadge";
 import { TagList } from "~/components/ui/Tag";
 import { getProject, projects } from "~/content/projects";
@@ -34,8 +35,8 @@ export default function Work({ params }: Route.ComponentProps) {
         ← All work
       </Link>
 
-      <header className="mt-8 grid gap-10 lg:grid-cols-[1fr_16rem] lg:items-end">
-        <div>
+      <header className="mt-8 grid gap-10 lg:grid-cols-[1fr_20rem] lg:gap-12">
+        <div className="lg:self-center">
           <div className="flex flex-wrap items-center gap-3">
             <p className="font-mono text-xs uppercase tracking-widest text-accent">Case study</p>
             {project.status && <StatusBadge status={project.status} />}
@@ -53,26 +54,38 @@ export default function Work({ params }: Route.ComponentProps) {
               ))}
             </div>
           )}
+          <dl className="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4">
+            {facts.map((fact) => (
+              <div key={fact.label} className="bg-surface p-5">
+                <dt className="font-mono text-xs text-muted">{fact.label}</dt>
+                <dd className="mt-2 font-medium">{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
         {project.screenshots[0] && (
-          <PhoneFrame
-            name={project.name}
-            tint={project.tint}
-            screenshot={project.screenshots[0]}
-            transitionName={`phone-${project.slug}`}
-            className="mx-auto w-44 sm:w-52 lg:w-full"
+          <div
+            className="group relative flex items-center justify-center overflow-hidden rounded-2xl border border-line px-8 py-10"
+            style={{ background: `linear-gradient(180deg, ${project.tint[0]}33, transparent)` }}
+          >
+            <ProjectDoodles slug={project.slug} tint={project.tint} />
+            <PhoneFrame
+              name={project.name}
+              tint={project.tint}
+              screenshot={project.screenshots[0]}
+              transitionName={`phone-${project.slug}`}
+              className="relative w-44 transition-transform duration-300 group-hover:-translate-y-2"
+            />
+          </div>
+        )}
+        {!project.screenshots[0] && project.cover && (
+          <img
+            src={project.cover.src}
+            alt={project.cover.alt}
+            className="aspect-[4/3] w-full rounded-2xl border border-line object-cover lg:aspect-auto lg:h-full lg:min-h-80"
           />
         )}
       </header>
-
-      <dl className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4">
-        {facts.map((fact) => (
-          <div key={fact.label} className="bg-surface p-5">
-            <dt className="font-mono text-xs text-muted">{fact.label}</dt>
-            <dd className="mt-2 font-medium">{fact.value}</dd>
-          </div>
-        ))}
-      </dl>
 
       <div className="mt-16 grid gap-14 lg:grid-cols-[1fr_18rem]">
         <div className="space-y-14">
