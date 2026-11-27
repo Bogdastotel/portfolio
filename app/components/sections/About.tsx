@@ -27,6 +27,12 @@ export function About() {
           {profile.bio.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
+          <figure className="border-l-2 border-accent pl-5">
+            <blockquote className="font-display text-xl leading-snug text-fg">“{profile.quote.text}”</blockquote>
+            <figcaption className="mt-3 text-sm">
+              {profile.quote.author}, <cite>{profile.quote.source}</cite>
+            </figcaption>
+          </figure>
           <p className="border-t border-line pt-5 text-base">
             <span className="text-fg">{profile.education.degree}</span>
             <br />

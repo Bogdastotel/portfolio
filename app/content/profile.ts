@@ -1,7 +1,7 @@
 export const profile = {
   name: "Nikola Bogdanovic",
   initials: "NB",
-  roles: ["Full Stack Developer", "Tech Lead", "React Native"],
+  roles: ["Senior Full Stack Developer", "Tech Lead", "React Native"],
   location: "Niš, Serbia",
   availability: "Open to full-time roles and freelance projects · Remote, hybrid or on-site",
   email: "nikola91bogdanovic@gmail.com",
@@ -14,13 +14,20 @@ export const profile = {
 
   headline: "Web, mobile and backend, built end to end.",
   intro:
-    "I'm Nikola, a full stack developer and tech lead with 7+ years of experience shipping web apps, APIs and iOS and Android apps, including Action Network with 10M+ monthly users. Off the clock I build 3D worlds and small games with Three.js.",
+    "I'm Nikola, a senior full stack developer and tech lead with 7+ years of experience shipping web apps, APIs and iOS and Android apps with React, React Native and Node.js, including Action Network with 10M+ monthly users. Off the clock I build 3D worlds and small games with Three.js.",
 
   bio: [
     "I focus on performance, clean architecture and a smooth user experience. I work across the stack (React, Next.js, Node.js, NestJS, React Native), so I can own a feature all the way through, from the database and API to the screen in someone's hand.",
     "Most recently I led a team of four at Knguru Studios, making the architecture calls, reviewing code and mentoring, while still shipping features myself.",
     "I use AI tools like Claude Code and Cursor every day: project rules, reusable commands, MCP integrations and plan, implement, test, fix loops for well-scoped work, always with human review before merge. It lets me ship faster without lowering the bar on code quality.",
   ],
+
+  /** A line I work by, shown in the About section. */
+  quote: {
+    text: "It is not the language that makes programs appear simple. It is the programmer that makes the language appear simple!",
+    author: "Robert C. Martin",
+    source: "Clean Code",
+  },
 
   education: {
     degree: "M.Sc. & B.Sc. in Mechanical Engineering",
