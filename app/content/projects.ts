@@ -8,6 +8,11 @@ export type Project = {
   /** One line for cards and meta descriptions. */
   summary: string;
   overview: string;
+  /**
+   * The hard part and how you solved it: the section reviewers read most.
+   * Two or three sentences each; the case study hides it while unset.
+   */
+  story?: { challenge: string; approach: string };
   contributions: string[];
   outcomes: { value: string; label: string }[];
   stack: string[];
@@ -201,7 +206,11 @@ export const projects: Project[] = [
       { value: "3", label: "apps across three markets" },
     ],
     stack: ["React Native", "TypeScript", "iOS", "Android"],
-    links: [],
+    links: [
+      { label: "Svenska Fans · App Store", href: "https://apps.apple.com/app/id427561174" },
+      { label: "SoccerNews.nl · App Store", href: "https://apps.apple.com/app/id1316409415" },
+      { label: "Goal.pl · App Store", href: "https://apps.apple.com/app/id6670400959" },
+    ],
     screenshots: [
       {
         src: "/images/projects/svenska-fans/news-feed.jpg",
@@ -216,6 +225,7 @@ export const projects: Project[] = [
         alt: "Goal.pl article comments: readers discuss a football story, with upvotes and replies",
       },
     ],
+    status: "Live",
     featured: true,
     tint: ["#f2b632", "#3f2c05"],
   },

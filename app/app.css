@@ -97,6 +97,28 @@ body {
 }
 
 /*
+ * Page transitions (View Transitions API): the page crossfades and a card's
+ * phone morphs into the case study header. Unsupported browsers just navigate.
+ */
+::view-transition-group(*) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.25s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/*
  * Hero banner for the 3D world: a car following the road. Without motion
  * path support, or with reduced motion, it simply sits part-way along.
  */

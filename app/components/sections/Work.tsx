@@ -24,6 +24,7 @@ export function Work() {
                   name={project.name}
                   tint={project.tint}
                   screenshot={project.screenshots[0]}
+                  transitionName={`phone-${project.slug}`}
                   className="w-40 shrink-0 self-start transition-transform duration-300 group-hover:-translate-y-2"
                 />
               </div>
@@ -36,7 +37,7 @@ export function Work() {
                   {project.status && <StatusBadge status={project.status} />}
                 </div>
                 <h3 className="font-display text-2xl font-semibold tracking-tight">
-                  <Link to={`/work/${project.slug}`} className="after:absolute after:inset-0">
+                  <Link to={`/work/${project.slug}`} viewTransition className="after:absolute after:inset-0">
                     {project.name}
                   </Link>
                 </h3>
@@ -67,7 +68,7 @@ export function Work() {
                     {project.status && <StatusBadge status={project.status} />}
                   </div>
                   <h4 className="font-display text-lg font-semibold tracking-tight">
-                    <Link to={`/work/${project.slug}`} className="after:absolute after:inset-0">
+                    <Link to={`/work/${project.slug}`} viewTransition className="after:absolute after:inset-0">
                       {project.name}
                     </Link>
                   </h4>

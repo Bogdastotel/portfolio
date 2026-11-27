@@ -30,7 +30,7 @@ export default function Work({ params }: Route.ComponentProps) {
 
   return (
     <article className="mx-auto max-w-6xl px-5 pb-24 pt-12 sm:px-8 sm:pt-16">
-      <Link to="/#work" className="font-mono text-xs text-muted transition-colors hover:text-fg">
+      <Link to="/#work" viewTransition className="font-mono text-xs text-muted transition-colors hover:text-fg">
         ← All work
       </Link>
 
@@ -59,7 +59,8 @@ export default function Work({ params }: Route.ComponentProps) {
             name={project.name}
             tint={project.tint}
             screenshot={project.screenshots[0]}
-            className="hidden w-full lg:block"
+            transitionName={`phone-${project.slug}`}
+            className="mx-auto w-44 sm:w-52 lg:w-full"
           />
         )}
       </header>
@@ -81,6 +82,21 @@ export default function Work({ params }: Route.ComponentProps) {
             </h2>
             <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{project.overview}</p>
           </section>
+
+          {project.story && (
+            <section aria-labelledby="challenge" className="grid gap-10 sm:grid-cols-2">
+              <div className="reveal">
+                <h2 id="challenge" className="font-display text-2xl font-semibold tracking-tight">
+                  The challenge
+                </h2>
+                <p className="mt-4 text-lg leading-relaxed text-muted">{project.story.challenge}</p>
+              </div>
+              <div className="reveal">
+                <h2 className="font-display text-2xl font-semibold tracking-tight">My approach</h2>
+                <p className="mt-4 text-lg leading-relaxed text-muted">{project.story.approach}</p>
+              </div>
+            </section>
+          )}
 
           <section aria-labelledby="contributions">
             <h2 id="contributions" className="font-display text-2xl font-semibold tracking-tight">
@@ -149,6 +165,7 @@ export default function Work({ params }: Route.ComponentProps) {
         <p className="font-mono text-xs text-muted">Next project</p>
         <Link
           to={`/work/${next.slug}`}
+          viewTransition
           className="mt-3 inline-block font-display text-3xl font-semibold tracking-tight transition-colors hover:text-accent sm:text-4xl"
         >
           {next.name} →
