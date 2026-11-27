@@ -10,7 +10,19 @@ export type WorldInput = { up: boolean; down: boolean; left: boolean; right: boo
 export type Score = { coins: number; coinsTotal: number; pins: number; strikes: number; goals: number };
 
 /** Where a visit got to, so leaving for a case study and coming back picks up from the same spot. */
-export type Progress = { x: number; z: number; heading: number; coins: boolean[]; strikes: number; goals: number };
+export type Progress = {
+  x: number;
+  z: number;
+  heading: number;
+  coins: boolean[];
+  strikes: number;
+  goals: number;
+  /**
+   * Everything that can be pushed around, in the order it was built: position (x, z), which way it is turned (the
+   * four numbers of a rotation), whether it has fallen over (1 or 0), and the direction it fell in (x, z).
+   */
+  bodies?: number[][];
+};
 
 export type World = {
   input: WorldInput;
@@ -1378,6 +1390,13 @@ export function createWorld(
       coins: coins.map((coin) => coin.taken),
       strikes,
       goals,
+      bodies: bodies.map((body) => {
+        const turn = body.mesh.quaternion;
+        const values = [body.x, body.z, turn.x, turn.y, turn.z, turn.w, body.fallen ? 1 : 0];
+        values.push(body.fallAxis.x, body.fallAxis.z);
+        // Three decimal places is finer than anyone can see, and keeps the save small.
+        return values.map((value) => Math.round(value * 1000) / 1000);
+      }),
     };
   }
 
@@ -1394,6 +1413,24 @@ export function createWorld(
     });
     strikes = progress.strikes;
     goals = progress.goals;
+
+    // Whatever was knocked about stays where it ended up, at rest. Going back to the start still tidies it all away.
+    if (progress.bodies?.length === bodies.length) {
+      bodies.forEach((body, index) => {
+        const [x, z, qx, qy, qz, qw, fallen, axisX, axisZ] = progress.bodies![index];
+        body.x = x;
+        body.z = z;
+        body.mesh.position.x = x;
+        body.mesh.position.z = z;
+        body.mesh.quaternion.set(qx, qy, qz, qw).normalize();
+        body.fallen = fallen === 1;
+        body.fallAngle = body.fallen ? Math.PI / 2 : 0;
+        body.fallAxis.set(axisX, 0, axisZ);
+      });
+      // Pins that were down are still down, and get stood back up after the usual pause.
+      pinsDown = pins.filter((pin) => pin.fallen).length;
+      if (pinsDown > 0) pinTimer = 6;
+    }
   }
 
   function heightAt(x: number, z: number) {

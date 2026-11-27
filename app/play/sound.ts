@@ -222,7 +222,7 @@ export function createSound(): Sound {
     chug?.frequency.setTargetAtTime(9 + pace * 20, now, 0.12);
     chugDepth?.gain.setTargetAtTime(0.28 - pace * 0.18, now, 0.2);
     engineFilter.frequency.setTargetAtTime(300 + pace * 400 + (throttle ? 200 : 0), now, 0.15);
-    const level = 0.05 + pace * 0.035 + (throttle ? 0.02 : 0);
+    const level = 0.075 + pace * 0.05 + (throttle ? 0.03 : 0);
     // A brief dip in volume makes each shift audible.
     engineGain.gain.setTargetAtTime(shifting ? level * 0.55 : level, now, shifting ? 0.02 : 0.15);
   }
