@@ -8,6 +8,7 @@ const nav = [
   { label: "Services", to: "/#services" },
   { label: "Experience", to: "/#experience" },
   { label: "About", to: "/#about" },
+  { label: "Explore 3D", to: "/play", highlight: true },
 ];
 
 export function Header() {
@@ -22,7 +23,14 @@ export function Header() {
           <ul className="flex items-center gap-7 text-sm text-muted">
             {nav.map((item) => (
               <li key={item.to}>
-                <Link to={item.to} className="transition-colors hover:text-fg">
+                <Link
+                  to={item.to}
+                  className={
+                    "highlight" in item
+                      ? "rounded-full border border-accent/50 px-3 py-1.5 text-accent transition-colors hover:border-accent"
+                      : "transition-colors hover:text-fg"
+                  }
+                >
                   {item.label}
                 </Link>
               </li>

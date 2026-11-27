@@ -95,3 +95,47 @@ body {
     scroll-behavior: auto;
   }
 }
+
+/*
+ * Hero banner for the 3D world: a car following the road. Without motion
+ * path support, or with reduced motion, it simply sits part-way along.
+ */
+.promo-car {
+  offset-rotate: auto;
+  offset-distance: 38%;
+}
+
+@keyframes promo-drive {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+@keyframes promo-dashes {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+@keyframes promo-ping {
+  75%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .promo-car {
+    animation: promo-drive 7s linear infinite;
+  }
+  .promo-dashes {
+    animation: promo-dashes 0.8s linear infinite;
+  }
+  .promo-ping {
+    animation: promo-ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}

@@ -1,3 +1,4 @@
+import { PlayPromo } from "~/components/sections/PlayPromo";
 import { ButtonLink } from "~/components/ui/Button";
 import { profile } from "~/content/profile";
 
@@ -22,7 +23,9 @@ export function Hero() {
         {profile.location} · {profile.availability}
       </p>
 
-      <dl className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4">
+      <PlayPromo />
+
+      <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4">
         {profile.proof.map((item) => (
           <div key={item.label} className="flex flex-col-reverse gap-2 bg-surface p-6">
             <dt className="text-sm text-muted">{item.label}</dt>
