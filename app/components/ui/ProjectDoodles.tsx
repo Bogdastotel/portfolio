@@ -286,12 +286,22 @@ const doodles: Record<string, Doodle[]> = {
     {
       side: "left",
       x: 10,
-      y: 14,
-      rotate: -10,
+      y: 10,
+      rotate: -6,
       svg: (
         <Svg>
-          <path d="M24 4l16 6v12c0 10-7 18-16 22C15 40 8 32 8 22V10z" {...line} />
-          <path className="doodle-pulse" d="M24 14l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6L15 21l6-1z" fill="var(--tint)" />
+          <g className="doodle-wiggle">
+            <path d="M24 0v10" {...line} />
+            <circle cx="24" cy="26" r="15" {...line} />
+            <path d="M9 21h30M9 31h30M24 11v30" {...line} strokeWidth={1.25} />
+            <ellipse cx="24" cy="26" rx="7" ry="15" {...line} strokeWidth={1.25} />
+          </g>
+          <path
+            className="doodle-pulse"
+            d="M42 8l1.5 3.5L47 13l-3.5 1.5L42 18l-1.5-3.5L37 13l3.5-1.5z"
+            fill="var(--tint)"
+          />
+          <path className="doodle-pulse" d="M6 40l1 2.5 2.5 1-2.5 1L6 47l-1-2.5-2.5-1 2.5-1z" fill="var(--tint)" />
         </Svg>
       ),
     },
@@ -299,49 +309,46 @@ const doodles: Record<string, Doodle[]> = {
       side: "left",
       x: 14,
       y: 60,
-      rotate: 10,
+      rotate: 8,
       svg: (
         <Svg>
           <g className="doodle-wiggle">
-            <circle cx="18" cy="28" r="12" {...line} />
-            <path d="M24 18l18-8v8l-12 6" {...line} />
-            <circle cx="18" cy="28" r="4" fill="var(--tint)" />
+            <path d="M18 36V10l22-5v26" {...line} />
+            <path d="M18 16l22-5" {...line} />
+            <circle cx="13" cy="36" r="5" fill="var(--tint)" />
+            <circle cx="35" cy="31" r="5" fill="var(--tint)" />
           </g>
         </Svg>
       ),
     },
     {
       side: "right",
-      x: 12,
-      y: 12,
+      x: 8,
+      y: 14,
       rotate: 12,
+      size: 52,
       svg: (
         <Svg>
-          <path d="M16 6l-12 8 5 8 5-3v23h20V19l5 3 5-8-12-8c-1 4-4 6-8 6s-7-2-8-6z" {...line} />
-          <text
-            x="24"
-            y="34"
-            textAnchor="middle"
-            fill="var(--tint)"
-            fontSize="13"
-            fontWeight="700"
-            fontFamily="var(--font-mono)"
-          >
-            10
-          </text>
+          <path d="M4 14h40v6a4 4 0 0 0 0 8v6H4v-6a4 4 0 0 0 0-8z" {...line} />
+          <path className="doodle-draw" pathLength={1} d="M30 14v20" {...accent} strokeDasharray="2 3" />
+          <path d="M11 21h13M11 27h9" {...accent} />
         </Svg>
       ),
     },
     {
       side: "right",
-      x: 8,
+      x: 12,
       y: 58,
-      rotate: -8,
+      rotate: -10,
       svg: (
         <Svg>
-          <rect x="6" y="10" width="36" height="32" rx="5" {...line} />
-          <path d="M6 20h36M16 6v8M32 6v8" {...line} />
-          <path className="doodle-draw" pathLength={1} d="M16 30l6 6 11-11" {...accent} strokeWidth={3} />
+          <g className="doodle-tilt">
+            <path d="M8 8h32L24 26z" {...line} />
+            <path d="M14 14h20l-10 10z" fill="var(--tint)" />
+            <path d="M24 26v16M16 42h16" {...line} />
+            <path d="M30 4l6 8" {...line} />
+            <circle cx="37" cy="10" r="4" {...accent} />
+          </g>
         </Svg>
       ),
     },

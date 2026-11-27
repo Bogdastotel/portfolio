@@ -20,10 +20,10 @@ export const experience: Job[] = [
       "Introduced AI-assisted development (Claude Code, Cursor) across the team, with agent workflows for API scaffolding, test generation and refactors.",
     ],
     apps: [
-      { name: "DeepDays", note: "app and backend, architecture to release", slug: "deepdays" },
+      { name: "DeepDays", note: "car meetups and events", slug: "deepdays" },
       { name: "Scoops", note: "chef recipes", slug: "scoops" },
       { name: "Brava", note: "video job matching", slug: "brava" },
-      { name: "ClubKit", note: "mobile app, web platform and API", slug: "clubkit" },
+      { name: "ClubKit", note: "nightclub events and tickets", slug: "clubkit" },
       { name: "Dark Stories", note: "mystery riddle game", slug: "dark-stories" },
       { name: "Bedtime Stories", note: "audio stories for children", slug: "bedtime-stories" },
     ],

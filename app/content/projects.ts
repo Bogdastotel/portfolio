@@ -48,7 +48,12 @@ export const projects: Project[] = [
     outcomes: [{ value: "10M+", label: "monthly users" }],
     stack: ["React Native", "TypeScript", "iOS", "Android"],
     links: [],
-    screenshots: [],
+    screenshots: [
+      {
+        src: "/images/projects/action-network/performance.jpg",
+        alt: "Action Network bet tracking: all-time and last-30-day units won, ROI, record and a live win-probability card",
+      },
+    ],
     featured: true,
     tint: ["#0f9d58", "#063a22"],
   },
@@ -59,9 +64,9 @@ export const projects: Project[] = [
     role: "Tech Lead",
     period: "2025 – 2026",
     platforms: "iOS · Android · API",
-    summary: "Cross-platform app and backend, led from architecture to release.",
+    summary: "Car meetup and event app: find events, see the details and get tickets.",
     overview:
-      "As tech lead I owned the architecture of the DeepDays mobile app and its backend, and built features across both while leading the team that shipped it.",
+      "DeepDays brings car enthusiasts to meetups and events: each event has its date, location, description and tickets in one place. As tech lead I owned the architecture of the mobile app and its backend, and built features across both while leading the team that shipped it.",
     contributions: [
       "Architecture and feature development for the React Native (Expo) app",
       "REST API design and development with NestJS and Express.js",
@@ -71,7 +76,12 @@ export const projects: Project[] = [
     outcomes: [{ value: "4", label: "developers led" }],
     stack: ["React Native", "Expo", "NestJS", "Express.js", "MongoDB", "Supabase"],
     links: [],
-    screenshots: [],
+    screenshots: [
+      {
+        src: "/images/projects/deepdays/event.jpg",
+        alt: "DeepDays event screen for a car meetup in Italy, with date, location, description and tickets",
+      },
+    ],
     featured: true,
     tint: ["#e2553d", "#3d120b"],
   },
@@ -100,7 +110,12 @@ export const projects: Project[] = [
       { label: "App Store", href: "https://apps.apple.com/us/app/scoops/id6760790355" },
       { label: "Google Play", href: "https://play.google.com/store/apps/details?id=com.knguru.scoops.app" },
     ],
-    screenshots: [],
+    screenshots: [
+      {
+        src: "/images/projects/scoops/explore-chefs.jpg",
+        alt: "Scoops Explore chefs screen: chef cards with a Subscribe button and their latest recipes, rating and cooking time",
+      },
+    ],
     status: "Live",
     featured: true,
     tint: ["#ff7a59", "#45160a"],
@@ -128,7 +143,12 @@ export const projects: Project[] = [
     stack: ["React Native", "Expo", "TypeScript", "NestJS", "PostgreSQL", "Supabase", "Redis", "Stripe"],
     // REVIEW: add store links after release.
     links: [],
-    screenshots: [],
+    screenshots: [
+      {
+        src: "/images/projects/brava/job-feed.jpg",
+        alt: "Brava job feed: a full-screen video job post for a barista in Amsterdam with an Apply button",
+      },
+    ],
     status: "Production-ready",
     featured: true,
     tint: ["#7c5cff", "#1c1147"],
@@ -140,9 +160,9 @@ export const projects: Project[] = [
     role: "Tech Lead, Full Stack Developer",
     period: "2025 – 2026",
     platforms: "iOS · Android · Web · API",
-    summary: "Full-stack scaling of a mobile app, its web platform and API.",
+    summary: "Nightclub events app: browse parties, see the details and buy tickets.",
     overview:
-      "ClubKit spans a mobile app, a companion web platform and the API behind both. My work was scaling it across the full stack.",
+      "ClubKit is an events app for nightclubs: guests browse upcoming parties, read the event details and buy tickets. It spans a mobile app, a companion web platform and the API behind both, and my work was scaling it across the full stack.",
     contributions: [
       "Full-stack scaling across the mobile app, web platform and API",
       "Cross-platform mobile development with React Native and Expo",
@@ -152,7 +172,12 @@ export const projects: Project[] = [
     outcomes: [],
     stack: ["React Native", "Expo", "React", "Next.js", "NestJS", "Express.js", "MongoDB"],
     links: [],
-    screenshots: [],
+    screenshots: [
+      {
+        src: "/images/projects/clubkit/event.jpg",
+        alt: "ClubKit event screen for a DJ party at a club, with date, event details and a Buy ticket button",
+      },
+    ],
     featured: true,
     tint: ["#5b7cfa", "#131c45"],
   },
@@ -177,7 +202,20 @@ export const projects: Project[] = [
     ],
     stack: ["React Native", "TypeScript", "iOS", "Android"],
     links: [],
-    screenshots: [],
+    screenshots: [
+      {
+        src: "/images/projects/svenska-fans/news-feed.jpg",
+        alt: "Svenska Fans news feed: football headlines, a live broadcast banner and tabs for hottest articles and forum threads",
+      },
+      {
+        src: "/images/projects/svenska-fans/soccernews-teams.jpg",
+        alt: "SoccerNews.nl team picker: follow clubs like Ajax, PSV and Feyenoord to personalise the news feed",
+      },
+      {
+        src: "/images/projects/svenska-fans/goal-comments.jpg",
+        alt: "Goal.pl article comments: readers discuss a football story, with upvotes and replies",
+      },
+    ],
     featured: true,
     tint: ["#f2b632", "#3f2c05"],
   },
@@ -243,14 +281,20 @@ export const projects: Project[] = [
     platforms: "iOS · Android · Web · API",
     summary: "Norwegian guidance app for couples and parents, on mobile and web.",
     overview:
-      "VI Appen gives couples and parents knowledge and guidance for everyday life, with a couple guide and a parent guide. I worked across the mobile app, the web app and the backend.",
+      "VI Appen gives couples and parents knowledge and guidance for everyday life, with a couple guide and a parent guide. It is live on the App Store and Google Play in Norway only. I worked across the mobile app, the web app and the backend.",
     contributions: ["Mobile app in React Native (CLI)", "Web app in React", "Backend API in NestJS"],
     outcomes: [],
     stack: ["React Native", "React", "NestJS", "TypeScript"],
-    // REVIEW: the Google Play listing (no.viappen.viappen) returned 404, so this links to Aptoide and has no status.
-    links: [{ label: "Aptoide", href: "https://vi-appen.en.aptoide.com/app" }],
-    screenshots: [],
-    tint: ["#e0528a", "#3f0f24"],
+    // Store listings are Norway-only and show as missing elsewhere, so no store links.
+    links: [],
+    screenshots: [
+      {
+        src: "/images/projects/vi-appen/home.jpg",
+        alt: "VI Appen home screen: a morning greeting and a couple guide lesson from a psychologist, with a video as the next step",
+      },
+    ],
+    status: "Live",
+    tint: ["#2f9e8f", "#0d2f2b"],
   },
   {
     slug: "ms-fitness",
