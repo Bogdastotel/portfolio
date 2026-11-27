@@ -9,7 +9,7 @@ const helloMail = `mailto:${profile.email}?subject=${encodeURIComponent("Hello f
 
 export function Contact() {
   return (
-    <Section id="contact" index="06" label="Contact" title="Hiring, or have something to build? Let's talk.">
+    <Section id="contact" index="07" label="Contact" title="Hiring, or have something to build? Let's talk.">
       <p className="reveal -mt-4 mb-8 flex items-center gap-2 font-mono text-sm text-muted">
         <span className="relative flex size-2">
           <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-60 motion-reduce:hidden" />

@@ -3,10 +3,12 @@ export const profile = {
   initials: "NB",
   roles: ["Full Stack Developer", "Tech Lead", "React Native"],
   location: "Niš, Serbia",
-  availability: "Open to full-time roles and freelance projects · Remote",
+  availability: "Open to full-time roles and freelance projects · Remote, hybrid or on-site",
   email: "nikola91bogdanovic@gmail.com",
   github: "https://github.com/Bogdastotel",
   linkedin: "https://www.linkedin.com/in/nikola-bogdanovic-082752177/",
+  // Opens the recommendations list; LinkedIn asks visitors to sign in first.
+  recommendations: "https://www.linkedin.com/in/nikola-bogdanovic-082752177/details/recommendations/",
   cv: "/cv/Nikola-Bogdanovic-CV.pdf",
   photo: "/images/profile/nikola.jpg",
 

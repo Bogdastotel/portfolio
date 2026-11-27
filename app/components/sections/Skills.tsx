@@ -4,7 +4,7 @@ import { skills } from "~/content/skills";
 
 export function Skills() {
   return (
-    <Section id="skills" index="04" label="Skills" title="The tools I reach for.">
+    <Section id="skills" index="05" label="Skills" title="The tools I reach for.">
       <dl className="divide-y divide-line border-y border-line">
         {skills.map((skill) => (
           <div key={skill.group} className="reveal grid gap-3 py-5 md:grid-cols-[14rem_1fr] md:gap-10">

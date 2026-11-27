@@ -47,16 +47,28 @@ export const projects: Project[] = [
     summary: "Sports betting companion app used by 10M+ people a month.",
     overview:
       "Action Network gives sports bettors one place to follow odds, scores and their own bets. At 10M+ monthly users, every feature has to stay fast and correct while data changes by the second.",
+    story: {
+      challenge:
+        "Action Network was a mature app on a legacy React Native CLI setup, and it had to move to Expo and React Native's New Architecture while 10M+ people a month kept using it. It also needed consent management and analytics that respect each user's choice, in a product where a slow screen or a wrong number is noticed straight away.",
+      approach:
+        "I was in charge of embedding OneTrust consent and the analytics that depend on it, and of the rewrite from React Native CLI to Expo on the New Architecture. Alongside that I measured the app and worked through performance improvements using Callstack's React Native optimization guide. When a mission-critical incident needed a cross-team effort, I took ownership of the mobile side, worked with the Paid Media engineering team and shipped the fixes that stabilised the apps.",
+    },
     contributions: [
-      "Real-time odds that update live across sportsbooks",
-      "Live scores",
-      "Expert picks",
-      "Bet tracking across sportsbooks",
-      "Line-movement alerts",
+      "Rewrite from legacy React Native CLI to Expo with the New Architecture",
+      "OneTrust consent management, embedded in the app",
+      "Analytics integration tied to user consent",
+      "Performance tracking and improvements, following Callstack's optimization guide",
+      "Ownership of the mobile side during a mission-critical, cross-team incident",
+      "Features across real-time odds, live scores, expert picks, bet tracking and line-movement alerts",
     ],
     outcomes: [{ value: "10M+", label: "monthly users" }],
-    stack: ["React Native", "TypeScript", "iOS", "Android"],
-    links: [],
+    stack: ["React Native", "Expo", "TypeScript", "OneTrust", "iOS", "Android"],
+    links: [
+      {
+        label: "Recommendation on LinkedIn",
+        href: "https://www.linkedin.com/in/nikola-bogdanovic-082752177/details/recommendations/",
+      },
+    ],
     screenshots: [
       {
         src: "/images/projects/action-network/performance.jpg",
@@ -93,6 +105,75 @@ export const projects: Project[] = [
     ],
     featured: true,
     tint: ["#e2553d", "#3d120b"],
+  },
+  {
+    slug: "svenska-fans",
+    name: "Svenska Fans + news apps",
+    company: "Better Collective",
+    role: "React Native Developer",
+    period: "2023 – 2026",
+    platforms: "iOS · Android",
+    summary: "A 37% load-time cut, plus sports news apps for two more markets.",
+    overview:
+      "Svenska Fans is a multi-sport app for the Swedish market. I cut its load time by 37%, and built sports news apps for the Dutch and Polish markets: SoccerNews.nl and Goal.pl.",
+    contributions: [
+      "Performance work that cut Svenska Fans load time by 37%",
+      "SoccerNews.nl, a sports news app for the Dutch market",
+      "Goal.pl, a sports news app for the Polish market",
+    ],
+    outcomes: [
+      { value: "37%", label: "faster load time" },
+      { value: "3", label: "apps across three markets" },
+    ],
+    stack: ["React Native", "TypeScript", "iOS", "Android"],
+    links: [
+      { label: "Svenska Fans · App Store", href: "https://apps.apple.com/app/id427561174" },
+      { label: "SoccerNews.nl · App Store", href: "https://apps.apple.com/app/id1316409415" },
+      { label: "Goal.pl · App Store", href: "https://apps.apple.com/app/id6670400959" },
+    ],
+    screenshots: [
+      {
+        src: "/images/projects/svenska-fans/news-feed.jpg",
+        alt: "Svenska Fans news feed: football headlines, a live broadcast banner and tabs for hottest articles and forum threads",
+      },
+      {
+        src: "/images/projects/svenska-fans/soccernews-teams.jpg",
+        alt: "SoccerNews.nl team picker: follow clubs like Ajax, PSV and Feyenoord to personalise the news feed",
+      },
+      {
+        src: "/images/projects/svenska-fans/goal-comments.jpg",
+        alt: "Goal.pl article comments: readers discuss a football story, with upvotes and replies",
+      },
+    ],
+    status: "Live",
+    featured: true,
+    tint: ["#f2b632", "#3f2c05"],
+  },
+  {
+    slug: "vi-appen",
+    name: "VI Appen",
+    company: "Codeus",
+    role: "Full-Stack Developer",
+    // REVIEW: shown as the whole Codeus period.
+    period: "2021 – 2023",
+    platforms: "iOS · Android · Web · API",
+    summary: "Norwegian guidance app for couples and parents, on mobile and web.",
+    overview:
+      "VI Appen gives couples and parents knowledge and guidance for everyday life, with a couple guide and a parent guide. It is live on the App Store and Google Play in Norway only. I worked across the mobile app, the web app and the backend.",
+    contributions: ["Mobile app in React Native (CLI)", "Web app in React", "Backend API in NestJS"],
+    outcomes: [],
+    stack: ["React Native", "React", "NestJS", "TypeScript"],
+    // Store listings are Norway-only and show as missing elsewhere, so no store links.
+    links: [],
+    screenshots: [
+      {
+        src: "/images/projects/vi-appen/home.jpg",
+        alt: "VI Appen home screen: a morning greeting and a couple guide lesson from a psychologist, with a video as the next step",
+      },
+    ],
+    status: "Live",
+    featured: true,
+    tint: ["#2f9e8f", "#0d2f2b"],
   },
   {
     slug: "scoops",
@@ -163,77 +244,6 @@ export const projects: Project[] = [
     tint: ["#7c5cff", "#1c1147"],
   },
   {
-    slug: "clubkit",
-    name: "ClubKit",
-    company: "Knguru Studios",
-    role: "Tech Lead, Full Stack Developer",
-    period: "2025 – 2026",
-    platforms: "iOS · Android · Web · API",
-    summary: "Nightclub events app: browse parties, see the details and buy tickets.",
-    overview:
-      "ClubKit is an events app for nightclubs: guests browse upcoming parties, read the event details and buy tickets. It spans a mobile app, a companion web platform and the API behind both, and my work was scaling it across the full stack.",
-    contributions: [
-      "Full-stack scaling across the mobile app, web platform and API",
-      "Cross-platform mobile development with React Native and Expo",
-      "Companion web platform with React and Next.js",
-      "REST APIs with Express.js and NestJS on Supabase and MongoDB",
-    ],
-    outcomes: [],
-    stack: ["React Native", "Expo", "React", "Next.js", "NestJS", "Express.js", "MongoDB"],
-    links: [],
-    screenshots: [
-      {
-        src: "/images/projects/clubkit/event.jpg",
-        alt: "ClubKit event screen for a DJ party at a club, with date, event details and a Buy ticket button",
-      },
-    ],
-    featured: true,
-    tint: ["#5b7cfa", "#131c45"],
-  },
-  {
-    slug: "svenska-fans",
-    name: "Svenska Fans + news apps",
-    company: "Better Collective",
-    role: "React Native Developer",
-    period: "2023 – 2026",
-    platforms: "iOS · Android",
-    summary: "A 37% load-time cut, plus sports news apps for two more markets.",
-    overview:
-      "Svenska Fans is a multi-sport app for the Swedish market. I cut its load time by 37%, and built sports news apps for the Dutch and Polish markets: SoccerNews.nl and Goal.pl.",
-    contributions: [
-      "Performance work that cut Svenska Fans load time by 37%",
-      "SoccerNews.nl, a sports news app for the Dutch market",
-      "Goal.pl, a sports news app for the Polish market",
-    ],
-    outcomes: [
-      { value: "37%", label: "faster load time" },
-      { value: "3", label: "apps across three markets" },
-    ],
-    stack: ["React Native", "TypeScript", "iOS", "Android"],
-    links: [
-      { label: "Svenska Fans · App Store", href: "https://apps.apple.com/app/id427561174" },
-      { label: "SoccerNews.nl · App Store", href: "https://apps.apple.com/app/id1316409415" },
-      { label: "Goal.pl · App Store", href: "https://apps.apple.com/app/id6670400959" },
-    ],
-    screenshots: [
-      {
-        src: "/images/projects/svenska-fans/news-feed.jpg",
-        alt: "Svenska Fans news feed: football headlines, a live broadcast banner and tabs for hottest articles and forum threads",
-      },
-      {
-        src: "/images/projects/svenska-fans/soccernews-teams.jpg",
-        alt: "SoccerNews.nl team picker: follow clubs like Ajax, PSV and Feyenoord to personalise the news feed",
-      },
-      {
-        src: "/images/projects/svenska-fans/goal-comments.jpg",
-        alt: "Goal.pl article comments: readers discuss a football story, with upvotes and replies",
-      },
-    ],
-    status: "Live",
-    featured: true,
-    tint: ["#f2b632", "#3f2c05"],
-  },
-  {
     slug: "dark-stories",
     name: "Dark Stories",
     company: "Knguru Studios",
@@ -294,31 +304,6 @@ export const projects: Project[] = [
     ],
     status: "Production-ready",
     tint: ["#4f6bd8", "#0e1740"],
-  },
-  {
-    slug: "vi-appen",
-    name: "VI Appen",
-    company: "Codeus",
-    role: "Full-Stack Developer",
-    // REVIEW: shown as the whole Codeus period.
-    period: "2021 – 2023",
-    platforms: "iOS · Android · Web · API",
-    summary: "Norwegian guidance app for couples and parents, on mobile and web.",
-    overview:
-      "VI Appen gives couples and parents knowledge and guidance for everyday life, with a couple guide and a parent guide. It is live on the App Store and Google Play in Norway only. I worked across the mobile app, the web app and the backend.",
-    contributions: ["Mobile app in React Native (CLI)", "Web app in React", "Backend API in NestJS"],
-    outcomes: [],
-    stack: ["React Native", "React", "NestJS", "TypeScript"],
-    // Store listings are Norway-only and show as missing elsewhere, so no store links.
-    links: [],
-    screenshots: [
-      {
-        src: "/images/projects/vi-appen/home.jpg",
-        alt: "VI Appen home screen: a morning greeting and a couple guide lesson from a psychologist, with a video as the next step",
-      },
-    ],
-    status: "Live",
-    tint: ["#2f9e8f", "#0d2f2b"],
   },
   {
     slug: "ms-fitness",
@@ -435,6 +420,33 @@ export const projects: Project[] = [
     logo: "/images/projects/brame/logo.png",
     status: "Live",
     tint: ["#f25fa0", "#3d0f27"],
+  },
+  {
+    slug: "clubkit",
+    name: "ClubKit",
+    company: "Knguru Studios",
+    role: "Tech Lead, Full Stack Developer",
+    period: "2025 – 2026",
+    platforms: "iOS · Android · Web · API",
+    summary: "Nightclub events app: browse parties, see the details and buy tickets.",
+    overview:
+      "ClubKit is an events app for nightclubs: guests browse upcoming parties, read the event details and buy tickets. It spans a mobile app, a companion web platform and the API behind both, and my work was scaling it across the full stack.",
+    contributions: [
+      "Full-stack scaling across the mobile app, web platform and API",
+      "Cross-platform mobile development with React Native and Expo",
+      "Companion web platform with React and Next.js",
+      "REST APIs with Express.js and NestJS on Supabase and MongoDB",
+    ],
+    outcomes: [],
+    stack: ["React Native", "Expo", "React", "Next.js", "NestJS", "Express.js", "MongoDB"],
+    links: [],
+    screenshots: [
+      {
+        src: "/images/projects/clubkit/event.jpg",
+        alt: "ClubKit event screen for a DJ party at a club, with date, event details and a Buy ticket button",
+      },
+    ],
+    tint: ["#5b7cfa", "#131c45"],
   },
 ];
 
