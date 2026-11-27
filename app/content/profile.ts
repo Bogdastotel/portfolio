@@ -30,6 +30,7 @@ export const profile = {
 
   proof: [
     { value: "7+", label: "years building software" },
+    { value: "20+", label: "apps shipped" },
     { value: "10M+", label: "monthly users on Action Network" },
     { value: "4", label: "developers led as tech lead" },
     { value: "37%", label: "faster load time on Svenska Fans" },

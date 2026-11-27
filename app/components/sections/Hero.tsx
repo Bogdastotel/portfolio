@@ -25,9 +25,12 @@ export function Hero() {
 
       <PlayPromo />
 
-      <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4">
+      <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-5">
         {profile.proof.map((item) => (
-          <div key={item.label} className="flex flex-col-reverse gap-2 bg-surface p-6">
+          <div
+            key={item.label}
+            className="flex flex-col-reverse justify-end gap-2 bg-surface p-6 last:col-span-2 lg:last:col-span-1"
+          >
             <dt className="text-sm text-muted">{item.label}</dt>
             <dd className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{item.value}</dd>
           </div>

@@ -1,7 +1,7 @@
 export const skills: { group: string; items: string[] }[] = [
   {
     group: "Mobile",
-    items: ["React Native", "Expo", "iOS & Android", "Performance optimization", "Xcode", "Android Studio"],
+    items: ["React Native", "Expo", "iOS & Android", "Native modules (Swift, Kotlin)", "Unity integration", "Performance optimization", "Xcode", "Android Studio"],
   },
   {
     group: "Frontend",
