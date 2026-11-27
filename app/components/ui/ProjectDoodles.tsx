@@ -282,6 +282,71 @@ const doodles: Record<string, Doodle[]> = {
       ),
     },
   ],
+  "vi-appen": [
+    {
+      side: "left",
+      x: 10,
+      y: 12,
+      rotate: -10,
+      size: 48,
+      svg: (
+        <Svg>
+          <path
+            className="doodle-pulse"
+            d="M24 42S6 31 6 18a9 9 0 0 1 18-3 9 9 0 0 1 18 3c0 13-18 24-18 24z"
+            fill="var(--tint)"
+          />
+          <path d="M24 42S6 31 6 18a9 9 0 0 1 18-3 9 9 0 0 1 18 3c0 13-18 24-18 24z" {...line} />
+        </Svg>
+      ),
+    },
+    {
+      side: "left",
+      x: 14,
+      y: 60,
+      rotate: 8,
+      svg: (
+        <Svg>
+          <rect x="4" y="9" width="40" height="30" rx="5" {...line} />
+          <path className="doodle-pulse" d="M20 17l11 7-11 7z" fill="var(--tint)" />
+        </Svg>
+      ),
+    },
+    {
+      side: "right",
+      x: 8,
+      y: 12,
+      rotate: 8,
+      size: 52,
+      svg: (
+        <Svg>
+          <g className="doodle-wiggle">
+            <path d="M4 8h28v18H16l-7 6v-6H4z" {...line} />
+            <path d="M10 14h16M10 20h10" {...accent} />
+          </g>
+          <path d="M36 20h8v16h-4v5l-6-5h-8v-6" {...line} />
+        </Svg>
+      ),
+    },
+    {
+      side: "right",
+      x: 12,
+      y: 58,
+      rotate: -8,
+      size: 44,
+      svg: (
+        <Svg>
+          <circle cx="13" cy="10" r="5" {...line} />
+          <path d="M4 42V26a9 9 0 0 1 18 0v16" {...line} />
+          <g className="doodle-tilt">
+            <circle cx="35" cy="22" r="4" fill="var(--tint)" />
+            <path d="M28 42v-8a7 7 0 0 1 14 0v8" {...accent} />
+          </g>
+          <path className="doodle-draw" pathLength={1} d="M22 30h6" {...accent} />
+        </Svg>
+      ),
+    },
+  ],
   clubkit: [
     {
       side: "left",
