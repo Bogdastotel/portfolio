@@ -20,13 +20,18 @@ export function Work() {
                 style={{ background: `linear-gradient(180deg, ${project.tint[0]}22, transparent)` }}
               >
                 <ProjectDoodles slug={project.slug} tint={project.tint} />
-                <PhoneFrame
-                  name={project.name}
-                  tint={project.tint}
-                  screenshot={project.screenshots[0]}
-                  transitionName={`phone-${project.slug}`}
-                  className="w-40 shrink-0 self-start transition-transform duration-300 group-hover:-translate-y-2"
-                />
+                {/* The transition is named on the visible part of the phone, so it morphs already cropped. */}
+                <div
+                  className="h-full w-40 shrink-0 [view-transition-class:phone_phone-card]"
+                  style={{ viewTransitionName: `phone-${project.slug}` }}
+                >
+                  <PhoneFrame
+                    name={project.name}
+                    tint={project.tint}
+                    screenshot={project.screenshots[0]}
+                    className="w-full transition-transform duration-300 group-hover:-translate-y-2"
+                  />
+                </div>
               </div>
 
               <div className="flex flex-1 flex-col gap-4 p-6">

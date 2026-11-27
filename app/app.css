@@ -110,8 +110,50 @@ body {
   animation-duration: 0.25s;
 }
 
+/*
+ * The phone travels and resizes a long way between the card and the case
+ * study, so it gets more time and a less front-loaded curve than the rest.
+ */
+::view-transition-group(.phone) {
+  animation-duration: 0.8s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/*
+ * A work card only shows the top of its phone, but the transition layer sits
+ * outside the card's clipping. So the phone is cropped at the bottom of its
+ * moving box while it shrinks into a card, and uncropped as it grows out of
+ * one. The class comes from the destination page, which gives the direction.
+ */
+@keyframes phone-crop {
+  from {
+    clip-path: inset(-5rem);
+  }
+  to {
+    clip-path: inset(-5rem -5rem 0 -5rem);
+  }
+}
+
+@keyframes phone-uncrop {
+  from {
+    clip-path: inset(-5rem -5rem 0 -5rem);
+  }
+  to {
+    clip-path: inset(-5rem);
+  }
+}
+
+::view-transition-image-pair(.phone-card) {
+  animation-name: phone-crop;
+}
+
+::view-transition-image-pair(.phone-detail) {
+  animation-name: phone-uncrop;
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
+  ::view-transition-image-pair(*),
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;

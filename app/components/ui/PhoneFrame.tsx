@@ -11,7 +11,7 @@ type Props = {
 export function PhoneFrame({ name, tint, screenshot, className = "", transitionName }: Props) {
   return (
     <div
-      className={`relative aspect-[9/19] overflow-hidden rounded-[2rem] border-[6px] border-[#05070a] bg-[#05070a] shadow-2xl shadow-black/40 ${className}`}
+      className={`relative aspect-[9/19] overflow-hidden rounded-[2rem] border-[6px] border-[#05070a] bg-[#05070a] shadow-2xl shadow-black/40 ${transitionName ? "[view-transition-class:phone_phone-detail]" : ""} ${className}`}
       style={transitionName ? { viewTransitionName: transitionName } : undefined}
     >
       {screenshot ? (
