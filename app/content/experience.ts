@@ -20,8 +20,10 @@ export const experience: Job[] = [
       "Introduced AI-assisted development (Claude Code, Cursor) across the team, with agent workflows for API scaffolding, test generation and refactors.",
     ],
     apps: [
-      { name: "Brava", note: "video job matching", slug: "brava" },
+      { name: "DeepDays", note: "app and backend, architecture to release", slug: "deepdays" },
       { name: "Scoops", note: "chef recipes", slug: "scoops" },
+      { name: "Brava", note: "video job matching", slug: "brava" },
+      { name: "ClubKit", note: "mobile app, web platform and API", slug: "clubkit" },
       { name: "Dark Stories", note: "mystery riddle game", slug: "dark-stories" },
       { name: "Bedtime Stories", note: "audio stories for children", slug: "bedtime-stories" },
     ],
@@ -66,6 +68,6 @@ export const experience: Job[] = [
     title: "Frontend Web Developer",
     place: "Serbia",
     period: "10/2018 – 11/2019",
-    points: ["Frontend web application development using Redux.js and GitHub workflows."],
+    points: ["Frontend web application development using React.js and GitHub workflows."],
   },
 ];

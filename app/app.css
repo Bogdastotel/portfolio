@@ -139,3 +139,168 @@ body {
     animation: promo-ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
   }
 }
+
+/*
+ * Selected work: themed doodles that spring out beside the phone when a card
+ * is hovered or focused. Loops only run while shown and with motion allowed;
+ * touch screens see them at rest, and reduced motion gets a plain fade.
+ */
+.doodle {
+  position: absolute;
+  opacity: 0;
+  transform: translate(var(--dx, 0), 12px) scale(0.4);
+  transition:
+    opacity 0.25s ease,
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+
+.group:hover .doodle,
+.group:focus-within .doodle {
+  opacity: 1;
+  transform: translate(0, 0) scale(1) rotate(var(--r, 0deg));
+}
+
+.doodle-draw,
+.doodle-draw-all * {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+@keyframes doodle-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes doodle-wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-12deg);
+  }
+  75% {
+    transform: rotate(12deg);
+  }
+}
+
+@keyframes doodle-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes doodle-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes doodle-drive {
+  0%,
+  100% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(4px) translateY(-1px);
+  }
+}
+
+@keyframes doodle-road {
+  to {
+    stroke-dashoffset: 18;
+  }
+}
+
+@keyframes doodle-wave {
+  0%,
+  100% {
+    transform: skewY(0deg);
+  }
+  50% {
+    transform: skewY(-6deg);
+  }
+}
+
+@keyframes doodle-tilt {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-14deg);
+  }
+}
+
+.doodle [class^="doodle-"] {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.doodle .doodle-wave {
+  transform-origin: left center;
+}
+
+.doodle .doodle-tilt {
+  transform-origin: left bottom;
+}
+
+.doodle .doodle-tick {
+  transform-origin: center bottom;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .group:hover .doodle-draw,
+  .group:hover .doodle-draw-all * {
+    animation: doodle-draw 0.9s ease-out calc(var(--i, 0) * 60ms + 0.15s) both;
+  }
+  .group:hover .doodle-wiggle {
+    animation: doodle-wiggle 0.8s ease-in-out 0.4s infinite;
+  }
+  .group:hover .doodle-pulse {
+    animation: doodle-pulse 1.2s ease-in-out infinite;
+  }
+  .group:hover .doodle-spin {
+    animation: doodle-spin 2.4s linear infinite;
+  }
+  .group:hover .doodle-drive {
+    animation: doodle-drive 1.2s ease-in-out infinite;
+  }
+  .group:hover .doodle-road {
+    animation: doodle-road 0.6s linear infinite;
+  }
+  .group:hover .doodle-wave {
+    animation: doodle-wave 0.9s ease-in-out infinite;
+  }
+  .group:hover .doodle-tilt {
+    animation: doodle-tilt 1.4s ease-in-out infinite;
+  }
+  .group:hover .doodle-tick {
+    animation: doodle-spin 3s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doodle,
+  .group:hover .doodle,
+  .group:focus-within .doodle {
+    transform: rotate(var(--r, 0deg));
+    transition: opacity 0.2s ease;
+  }
+}
+
+@media (hover: none) {
+  .doodle {
+    opacity: 0.55;
+    transform: rotate(var(--r, 0deg));
+  }
+}

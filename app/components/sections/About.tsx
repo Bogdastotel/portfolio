@@ -3,7 +3,7 @@ import { profile } from "~/content/profile";
 
 export function About() {
   return (
-    <Section id="about" index="05" label="About" title="Full-stack by background, mobile by choice.">
+    <Section id="about" index="05" label="About" title="Full stack, from the database to the App Store.">
       <div className="grid gap-10 md:grid-cols-[14rem_1fr]">
         <div className="reveal">
           {profile.photo ? (

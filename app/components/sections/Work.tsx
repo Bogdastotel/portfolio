@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 
 import { PhoneFrame } from "~/components/ui/PhoneFrame";
+import { ProjectDoodles } from "~/components/ui/ProjectDoodles";
 import { Section } from "~/components/ui/Section";
 import { TagList } from "~/components/ui/Tag";
 import { StatusBadge } from "~/components/ui/StatusBadge";
@@ -15,9 +16,10 @@ export function Work() {
             <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface transition-colors hover:border-muted">
               <div
                 aria-hidden={project.screenshots.length === 0}
-                className="flex h-56 justify-center overflow-hidden pt-8"
+                className="relative flex h-56 justify-center overflow-hidden pt-8"
                 style={{ background: `linear-gradient(180deg, ${project.tint[0]}22, transparent)` }}
               >
+                <ProjectDoodles slug={project.slug} tint={project.tint} />
                 <PhoneFrame
                   name={project.name}
                   tint={project.tint}

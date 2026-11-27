@@ -1,6 +1,6 @@
 # Portfolio
 
-Personal site of Nikola Bogdanovic: React Native developer, tech lead, full stack.
+Personal site of Nikola Bogdanovic: full stack developer, tech lead, React Native.
 
 Built with React Router (framework mode) on Vite, TypeScript and Tailwind CSS. Every page is prerendered to static HTML at build time, so there is no server to run.
 
@@ -36,4 +36,4 @@ Screenshots go in `public/images/projects/<slug>/` and are referenced from `proj
 
 ## Deploy
 
-Static output in `build/client`; `vercel.json` configures Vercel. Set `VITE_SITE_URL` to the production origin (for example `https://example.com`) to turn on canonical and Open Graph URL tags.
+Static output in `build/client`; `vercel.json` configures Vercel. Set `VITE_SITE_URL` to the production origin (for example `https://example.com`) to turn on canonical and Open Graph URL tags, the share image (`public/og/default.png`) and a generated `sitemap.xml` with a matching `robots.txt`.
