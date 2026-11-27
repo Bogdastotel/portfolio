@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 import { Section } from "~/components/ui/Section";
 import { experience } from "~/content/experience";
 
@@ -28,7 +30,16 @@ export function Experience() {
                 <ul className="mt-5 grid gap-2 sm:grid-cols-2">
                   {job.apps.map((app) => (
                     <li key={app.name} className="rounded-xl border border-line bg-surface px-4 py-3 text-sm">
-                      <span className="font-medium">{app.name}</span>
+                      {app.slug ? (
+                        <Link
+                          to={`/work/${app.slug}`}
+                          className="font-medium underline decoration-line underline-offset-4 transition-colors hover:text-accent"
+                        >
+                          {app.name}
+                        </Link>
+                      ) : (
+                        <span className="font-medium">{app.name}</span>
+                      )}
                       <span className="text-muted"> · {app.note}</span>
                     </li>
                   ))}

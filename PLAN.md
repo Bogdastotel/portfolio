@@ -26,14 +26,14 @@ A personal portfolio whose first job is winning interviews (React Native / Tech 
 **`/` home**
 
 1. Hero: roles, headline, intro, `View work` and `Download CV`, availability line, four proof numbers
-2. Selected work: four case-study cards in phone frames
+2. Selected work: six featured case-study cards in phone frames, then a compact "More work" list of the other seven, with `Live` / `Production-ready` badges
 3. Services: mobile apps, web apps, APIs and backends, tech leadership
 4. Experience: Knguru Studios, Better Collective, Codeus (with its four client apps), Brame, Softelm
 5. Skills: Mobile, Frontend, Backend, Databases, AI tools
 6. About: bio, photo, education
 7. Contact: "Hiring?" and "Have a project?" cards
 
-**`/work/:slug`**: `action-network`, `deepdays`, `clubkit`, `svenska-fans`. Each has role facts, overview, what I worked on, results, stack, screenshots, store links, next project.
+**`/work/:slug`**: featured `action-network`, `brava`, `scoops`, `deepdays`, `clubkit`, `svenska-fans`; more work `dark-stories`, `bedtime-stories`, `vi-appen`, `ms-fitness`, `troskovi`, `and-repeat`, `brame`. Each has role facts, overview, what I worked on, results, stack, screenshots, store links, next project.
 
 **Unknown URLs** render a 404 page (`build/client/404.html`, copied from the SPA fallback at build time).
 
@@ -56,6 +56,10 @@ A personal portfolio whose first job is winning interviews (React Native / Tech 
 - [ ] **Open Graph image** at `public/og/default.png` (1200×630); `app/lib/seo.ts` already points at it
 - [ ] **Sitemap** (`sitemap.xml`) and a `Sitemap:` line in `robots.txt`, once the URL is known
 - [ ] **Case-study copy**: currently limited to what the CV says, so pages are thin, especially ClubKit and DeepDays. Expand in `app/content/projects.ts`.
+- [ ] **Review the nine added projects**: every assumption is marked `// REVIEW:` in `app/content/projects.ts`. Dark Stories (period, platforms, stack and contributions come from the store listing only), Bedtime Stories period, Codeus app periods (all shown as 2021 – 2023).
+- [ ] **VI Appen and &Repeat links**: their store listings returned 404 (Google Play `no.viappen.viappen`, App Store `id1551123480`), so they have no link and no status badge. Add current links if the apps are still available.
+- [ ] **Brava**: unreleased client product. Check with Knguru before deploy; add store links after release.
+- [ ] **Codeus / Brame dates**: the CV has Codeus as 06/2019 – 07/2023; `experience.ts` has Codeus 06/2021 – 08/2023 and Brame 12/2019 – 06/2021 as a separate job. Confirm which is right.
 - [ ] **Confirm tech stacks** for Action Network and Svenska Fans (React Native + TypeScript was assumed)
 - [ ] **Confidentiality check** with Better Collective / Knguru on naming metrics and showing screenshots
 - [ ] **Screenshots** in `public/images/projects/<slug>/`, referenced from `projects.ts` (phone frames show coloured placeholders until then)

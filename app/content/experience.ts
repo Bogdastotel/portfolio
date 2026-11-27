@@ -5,7 +5,7 @@ export type Job = {
   period: string;
   points: string[];
   /** Smaller client projects worth naming without a full case study. */
-  apps?: { name: string; note: string }[];
+  apps?: { name: string; note: string; /** Links the chip to /work/<slug>. */ slug?: string }[];
 };
 
 export const experience: Job[] = [
@@ -18,6 +18,12 @@ export const experience: Job[] = [
       "Led a team of 4 developers: architecture decisions, code reviews, mentoring and enforcing best practices.",
       "Directed architecture and development of cross-platform mobile apps with React Native and Expo, plus companion web platforms (React, Next.js), REST APIs (Express.js, NestJS) and Supabase/MongoDB databases.",
       "Introduced AI-assisted development (Claude Code, Cursor) across the team, with agent workflows for API scaffolding, test generation and refactors.",
+    ],
+    apps: [
+      { name: "Brava", note: "video job matching", slug: "brava" },
+      { name: "Scoops", note: "chef recipes", slug: "scoops" },
+      { name: "Dark Stories", note: "mystery riddle game", slug: "dark-stories" },
+      { name: "Bedtime Stories", note: "audio stories for children", slug: "bedtime-stories" },
     ],
   },
   {
@@ -40,10 +46,10 @@ export const experience: Job[] = [
       "Built React Native apps for clients across industries, with React, Angular, Node.js and Symfony on web and backend.",
     ],
     apps: [
-      { name: "VI Appen", note: "parenting guidance" },
-      { name: "MS Fitness", note: "training and diet coaching" },
-      { name: "Troskovi", note: "building expenses" },
-      { name: "&Repeat", note: "QR-based recycling rewards" },
+      { name: "VI Appen", note: "parenting guidance", slug: "vi-appen" },
+      { name: "MS Fitness", note: "training and diet coaching", slug: "ms-fitness" },
+      { name: "Troskovi", note: "building expenses", slug: "troskovi" },
+      { name: "&Repeat", note: "QR-based recycling rewards", slug: "and-repeat" },
     ],
   },
   {

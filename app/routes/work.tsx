@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { NotFound } from "~/components/NotFound";
 import { ButtonLink } from "~/components/ui/Button";
 import { PhoneFrame } from "~/components/ui/PhoneFrame";
+import { StatusBadge } from "~/components/ui/StatusBadge";
 import { TagList } from "~/components/ui/Tag";
 import { getProject, projects } from "~/content/projects";
 import { seo } from "~/lib/seo";
@@ -35,7 +36,10 @@ export default function Work({ params }: Route.ComponentProps) {
 
       <header className="mt-8 grid gap-10 lg:grid-cols-[1fr_16rem] lg:items-end">
         <div>
-          <p className="font-mono text-xs uppercase tracking-widest text-accent">Case study</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="font-mono text-xs uppercase tracking-widest text-accent">Case study</p>
+            {project.status && <StatusBadge status={project.status} />}
+          </div>
           <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight text-balance sm:text-6xl">
             {project.name}
           </h1>
