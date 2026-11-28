@@ -214,17 +214,35 @@ export const projects: Project[] = [
     summary: "Recipe app built around chefs, with paid subscriptions to each chef.",
     overview:
       "Scoops is a recipe app where people follow chefs and subscribe to their recipes. It is live on the App Store and Google Play in English and German. I led the mobile app, the API, the admin dashboard and the web pages that open recipes in the app.",
+    story: {
+      challenge:
+        "Scoops was written from scratch, and the architecture of the whole product was mine to decide. The hard part was purchasing: every chef has their own paid subscription, so one person can hold several at once, and what they have paid for has to stay correct and usable offline and in places with no network at all.",
+      approach:
+        "I architected the Expo app, the Express.js API and the admin dashboard on Firebase and Google Cloud, and built all of the purchasing on RevenueCat, so that access is decided per chef and still holds when the device is offline. I wrote custom scripts so that the purchase grouping for a new chef can be added from the admin dashboard. The iOS app runs at a 99.95% crash-free rate.",
+    },
     contributions: [
+      "Architecture of the whole product, built from scratch",
       "Expo app with recipes, chefs, collections, search, favourites and a shopping list",
-      "Offline access to saved data on the device",
-      "Per-chef in-app subscriptions with RevenueCat",
+      "Offline access to saved data on the device, including what each subscription unlocks",
+      "Per-chef in-app subscriptions, built entirely on RevenueCat",
+      "Custom scripts that let a new chef's purchase grouping be added from the admin dashboard",
       "Express.js API with Drizzle ORM on Postgres",
       "Automatic translation of recipes, ingredients and steps with the Claude API",
       "Admin dashboard for recipes, chefs, ingredients and blog posts",
       "Next.js site with links that open a recipe in the app",
     ],
-    outcomes: [],
-    stack: ["React Native", "Expo", "TypeScript", "Express.js", "PostgreSQL", "Supabase", "RevenueCat", "Next.js"],
+    outcomes: [{ value: "99.95%", label: "crash-free on iOS" }],
+    stack: [
+      "React Native",
+      "Expo",
+      "TypeScript",
+      "Express.js",
+      "Firebase",
+      "Google Cloud",
+      "PostgreSQL",
+      "RevenueCat",
+      "Next.js",
+    ],
     links: [
       { label: "App Store", href: "https://apps.apple.com/us/app/scoops/id6760790355" },
       { label: "Google Play", href: "https://play.google.com/store/apps/details?id=com.knguru.scoops.app" },
@@ -250,16 +268,29 @@ export const projects: Project[] = [
     overview:
       "Brava matches job seekers and employers through short video. Job seekers swipe a feed of jobs and apply with a CV, text, voice or video answer; employers post jobs, review applicants and manage their company content. I led the build of the app, the API behind it and the admin dashboard.",
     contributions: [
+      "Architecture and stack set up from zero",
       "One Expo codebase shipping to iOS, Android and the web",
       "NestJS API on Postgres, with Redis job queues for video and audio processing",
       "Resumable video uploads that survive a dropped connection",
       "CV upload with automatic extraction of structured profile data using an LLM",
       "Employer subscriptions with Stripe",
       "English and German throughout, with Google and Apple sign-in",
-      "Admin dashboard in React",
+      "Admin dashboard in React with Vite",
+      "Supabase for the data layer, with deploys on Railway",
     ],
     outcomes: [],
-    stack: ["React Native", "Expo", "TypeScript", "NestJS", "PostgreSQL", "Supabase", "Redis", "Stripe"],
+    stack: [
+      "React Native",
+      "Expo",
+      "TypeScript",
+      "NestJS",
+      "PostgreSQL",
+      "Supabase",
+      "Redis",
+      "Stripe",
+      "Railway",
+      "Vite",
+    ],
     // REVIEW: add store links after release.
     links: [],
     screenshots: [
