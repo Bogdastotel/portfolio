@@ -87,7 +87,13 @@ export const projects: Project[] = [
     platforms: "iOS · Android · API",
     summary: "Car meetup and event app: find events, see the details and get tickets.",
     overview:
-      "DeepDays brings car enthusiasts to meetups and events: each event has its date, location, description and tickets in one place. As tech lead I owned the architecture of the mobile app and its backend, and built features across both while leading the team that shipped it.",
+      "DeepDays brings car enthusiasts to meetups and events: each event has its date, location, description and tickets in one place. In the app the car is the profile, and an event is something you apply to with that car. As tech lead I owned the architecture of the mobile app and its backend, and built features across both while leading the team that shipped it.",
+    story: {
+      challenge:
+        "DeepDays already had accounts and events on the web. The app had to put the car at the centre of that: photos and specs, a 3D model on the home screen, an application to take that car to an event, then tickets, a pass, and a QR sticker that opens the right car when someone scans it. Sign-in, share links and sticker scans all land in the same app, including when it is closed and when the link is opened inside a browser that never hands off a universal link. The garage, the application and the ticket describe the same car, so a wrong link or a half-filled profile is obvious straight away.",
+      approach:
+        "I owned the architecture of the Expo app and the API behind it, and shipped the car, application and ticket flows with a team of four. Sign-in links a phone number to an existing DeepDays account, with email magic links through my.deepdays.de and Apple sign-in beside it. Cold-start links are resolved before the main navigator mounts, and a custom deepdays:// scheme covers in-app browsers where the https link does not open the app. Adding a car sends the photos to a suggest endpoint, so model, modifications and horsepower come back filled in and the owner corrects whatever was off. The 3D car runs as a model-viewer scene in a WebView; on the home screen the page keeps the scroll and turns the model itself. Tickets are paid with Stripe, including Apple Pay and Google Pay, and the same ticket is added to Apple Wallet or Google Wallet. Alongside the features I kept the architecture calls, the reviews and the AI-assisted workflow for API scaffolding and refactors.",
+    },
     contributions: [
       "Architecture and feature development for the React Native (Expo) app",
       "REST API design and development with NestJS and Express.js",
@@ -116,16 +122,26 @@ export const projects: Project[] = [
     summary: "A 37% load-time cut, plus sports news apps for two more markets.",
     overview:
       "Svenska Fans is a multi-sport app for the Swedish market. I cut its load time by 37%, and built sports news apps for the Dutch and Polish markets: SoccerNews.nl and Goal.pl.",
+    story: {
+      challenge:
+        "Svenska Fans was a legacy app built on a GraphQL API, and it had to move to a JSON:API backend on a short deadline. The new API renamed some fields, while the app's own variable names had to stay as they were. Ads had to follow the regulations that apply to them, and consent and push notifications had to work across the whole app. SoccerNews.nl and Goal.pl share one sports news template, so a feature added for one brand must not break the other.",
+      approach:
+        "I replaced the GraphQL layer with JSON:API and React Query, and put a mapper between the API and the app that translates the new field names back to the ones the screens already use, so the screens did not have to change. I wrote the ad scripts each regulation calls for, and set up OneSignal and OneTrust in both their dashboards and the app. On the backend I helped with the Laravel API. I architected and built the news template from scratch on React Native CLI, including the comment, vote and reply sections, and later rewrote it in Expo on the New Architecture. It is structured so brand-specific features can be added without touching what the other brand relies on. I also embedded ads there and used an in-house library to show videos as reels.",
+    },
     contributions: [
       "Performance work that cut Svenska Fans load time by 37%",
-      "SoccerNews.nl, a sports news app for the Dutch market",
-      "Goal.pl, a sports news app for the Polish market",
+      "Migration of the legacy app from GraphQL to JSON:API with React Query, behind a field-name mapper",
+      "Regulation-specific ad scripts, plus OneSignal and OneTrust in the dashboards and the app",
+      "Laravel backend support",
+      "SoccerNews.nl and Goal.pl: a multi-brand news template architected and built from scratch on React Native CLI, later rewritten in Expo on the New Architecture",
+      "Comment, vote and reply sections for the news apps",
+      "Ads and reels-style video in the news apps, using an in-house video library",
     ],
     outcomes: [
       { value: "37%", label: "faster load time" },
       { value: "3", label: "apps across three markets" },
     ],
-    stack: ["React Native", "TypeScript", "iOS", "Android"],
+    stack: ["React Native", "Expo", "TypeScript", "React Query", "JSON:API", "OneSignal", "OneTrust", "Laravel"],
     links: [
       { label: "Svenska Fans · App Store", href: "https://apps.apple.com/app/id427561174" },
       { label: "SoccerNews.nl · App Store", href: "https://apps.apple.com/app/id1316409415" },
@@ -160,9 +176,22 @@ export const projects: Project[] = [
     summary: "Norwegian guidance app for couples and parents, on mobile and web.",
     overview:
       "VI Appen gives couples and parents knowledge and guidance for everyday life, with a couple guide and a parent guide. It is live on the App Store and Google Play in Norway only. I worked across the mobile app, the web app and the backend.",
-    contributions: ["Mobile app in React Native (CLI)", "Web app in React", "Backend API in NestJS"],
+    story: {
+      challenge:
+        "VI Appen was first written in a functional style, with pipe syntax throughout, so working in it meant learning that way of writing code: Ramda, ts-belt and fp-ts, and languages such as Fable and ReScript. I also looked after the AWS setup, the Lambda functions and the NestJS backend. Then the app was hit by an SMS fraud attack: a script kept creating new accounts with a premium-rate phone number, so every sign-up made our AWS side send a two-factor SMS to it, and the attacker took a share of what the provider was paid for each message received.",
+      approach:
+        "I traced the traffic back to the sign-up and two-factor flow and worked out what the script was doing. I then put stricter rules on the Lambda functions and added throttling to the high-risk endpoints, both on the AWS Lambdas and in the NestJS API, so a single caller could no longer trigger a stream of SMS codes.",
+    },
+    contributions: [
+      "Mobile app in React Native (CLI)",
+      "Web app in React",
+      "Backend API in NestJS",
+      "AWS and Lambda management",
+      "Stopped an SMS fraud attack on sign-up with stricter Lambda rules and throttling on high-risk endpoints",
+      "Functional-style codebase: pipe syntax with Ramda, ts-belt and fp-ts",
+    ],
     outcomes: [],
-    stack: ["React Native", "React", "NestJS", "TypeScript"],
+    stack: ["React Native", "React", "NestJS", "TypeScript", "AWS Lambda", "fp-ts", "Ramda"],
     // Store listings are Norway-only and show as missing elsewhere, so no store links.
     links: [],
     screenshots: [
